@@ -1,14 +1,10 @@
 #include <math.h>
+// #include "Glew/glew.h"
 
-#include <SDL2/SDL.h>
 #ifdef __APPLE__
-#include <SDL2_image/SDL_image.h>
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
+  #include <SDL2_image/SDL_image.h>
 #else
-#include <SDL2/SDL_image.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
+  #include <SDL2/SDL_image.h>
 #endif
 
 #include "vehicles.h"
@@ -29,6 +25,8 @@ bool useEnvmap=true;
 bool useHeadlight=false;
 bool useShadow=true;
 int cameraType=0;
+
+static int keymap[Controller::NKEYS] = {'a', 'd', 'w', 's'};
 
 World world;
 
@@ -131,95 +129,6 @@ void drawAxis(){
 
 }
 
-/*
-//vecchio codice ora commentato
-// disegna un cubo rasterizzando quads
-void drawCubeFill()
-{
-const float S=100;
-
-  glBegin(GL_QUADS); 
-    
-    glNormal3f(  0,0,+1  );
-    glVertex3f( +S,+S,+S );
-    glVertex3f( -S,+S,+S );
-    glVertex3f( -S,-S,+S );
-    glVertex3f( +S,-S,+S );
-
-    glNormal3f(  0,0,-1  );
-    glVertex3f( +S,-S,-S );
-    glVertex3f( -S,-S,-S );
-    glVertex3f( -S,+S,-S );
-    glVertex3f( +S,+S,-S );
-
-    glNormal3f(  0,+1,0  );
-    glVertex3f( +S,+S,+S );
-    glVertex3f( -S,+S,+S );
-    glVertex3f( -S,+S,-S );
-    glVertex3f( +S,+S,-S );
-
-    glNormal3f(  0,-1,0  );
-    glVertex3f( +S,-S,-S );
-    glVertex3f( -S,-S,-S );
-    glVertex3f( -S,-S,+S );
-    glVertex3f( +S,-S,+S );
-
-    glNormal3f( +1,0,0  );
-    glVertex3f( +S,+S,+S );
-    glVertex3f( +S,-S,+S );
-    glVertex3f( +S,-S,-S );
-    glVertex3f( +S,+S,-S );
-
-    glNormal3f( -1,0,0  );
-    glVertex3f( -S,+S,-S );
-    glVertex3f( -S,-S,-S );
-    glVertex3f( -S,-S,+S );
-    glVertex3f( -S,+S,+S );
-
-  glEnd();
-}
-
-// disegna un cubo in wireframe
-void drawCubeWire()
-{
-  glBegin(GL_LINE_LOOP); // faccia z=+1
-    glVertex3f( +1,+1,+1 );
-    glVertex3f( -1,+1,+1 );
-    glVertex3f( -1,-1,+1 );
-    glVertex3f( +1,-1,+1 );
-  glEnd();
-
-  glBegin(GL_LINE_LOOP); // faccia z=-1
-    glVertex3f( +1,-1,-1 );
-    glVertex3f( -1,-1,-1 );
-    glVertex3f( -1,+1,-1 );
-    glVertex3f( +1,+1,-1 );
-  glEnd();
-
-  glBegin(GL_LINES);  // 4 segmenti da -z a +z
-    glVertex3f( -1,-1,-1 );
-    glVertex3f( -1,-1,+1 );
-
-    glVertex3f( +1,-1,-1 );
-    glVertex3f( +1,-1,+1 );
-
-    glVertex3f( +1,+1,-1 );
-    glVertex3f( +1,+1,+1 );
-
-    glVertex3f( -1,+1,-1 );
-    glVertex3f( -1,+1,+1 );  
-  glEnd();
-}
-
-void drawCube()
-{
-  glColor3f(.9,.9,.9);
-  drawCubeFill();
-  glColor3f(0,0,0);
-  drawCubeWire();
-}
-*/
-
 
 // setto la posizione della camera
 void setCamera(){
@@ -301,12 +210,12 @@ printf("%f %f %f\n",viewAlpha,viewBeta,eyeDist);
 }
 
 /* Esegue il Rendering della scena */
-void rendering(SDL_Window *win){
+void rendering(){
   
   // un frame in piu'!!!
   fpsNow++;
   
-  glLineWidth(3); // linee larghe
+  glLineWidth(2); // linee larghe
      
   // settiamo il viewport
   glViewport(0,0, scrW, scrH);
@@ -371,13 +280,13 @@ void rendering(SDL_Window *win){
   printf("\r[DEBUG] FPS %f", fps);
   SetCoordToPixel();
   glBegin(GL_QUADS);
-  float y=scrH*fps/100;
-  float ramp=fps/100;
-  glColor3f(1-ramp,0,ramp);
-  glVertex2d(10,0);
-  glVertex2d(10,y);
-  glVertex2d(0,y);
-  glVertex2d(0,0);
+    float y=scrH*fps/100;
+    float ramp=fps/100;
+    glColor3f(1-ramp,0,ramp);
+    glVertex2d(10,0);
+    glVertex2d(10,y);
+    glVertex2d(0,y);
+    glVertex2d(0,0);
   glEnd();
   
   glEnable(GL_DEPTH_TEST);
@@ -386,172 +295,38 @@ void rendering(SDL_Window *win){
   
   glFinish();
   // ho finito: buffer di lavoro diventa visibile
-  SDL_GL_SwapWindow(win);
+  glutSwapBuffers();
 }
 
-void redraw(){
-  // ci automandiamo un messaggio che (s.o. permettendo)
-  // ci fara' ridisegnare la finestra
-  SDL_Event e;
-  e.type=SDL_WINDOWEVENT;
-  e.window.event=SDL_WINDOWEVENT_EXPOSED;
-  SDL_PushEvent(&e);
+// void redraw(){
+//   // ci automandiamo un messaggio che (s.o. permettendo)
+//   // ci fara' ridisegnare la finestra
+//   SDL_Event e;
+//   e.type=SDL_WINDOWEVENT;
+//   e.window.event=SDL_WINDOWEVENT_EXPOSED;
+//   SDL_PushEvent(&e);
+// }
+
+//These functions right here, instead, control the UI (and kinda the controller)
+
+void keyboardDownHandler(unsigned char key, int x, int y) {
+        bike.controller.EatKey(key, keymap , true);
+        if (key=='1') cameraType=(cameraType+1)%CAMERA_TYPE_MAX;
+        if (key=='2') useWireframe=!useWireframe;
+        if (key=='3') useEnvmap=!useEnvmap;
+        if (key=='4') useHeadlight=!useHeadlight;
+        if (key=='5') useShadow=!useShadow;
+
 }
 
-int main(int argc, char* argv[])
-{
-SDL_Window *win;
-SDL_GLContext mainContext;
-Uint32 windowID;
-SDL_Joystick *joystick;
-static int keymap[Controller::NKEYS] = {SDLK_a, SDLK_d, SDLK_w, SDLK_s};
+void keyboardUpHandler(unsigned char key, int x, int y) {
+     bike.controller.EatKey(key, keymap , false);
+}
 
-  // inizializzazione di SDL
-  SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
-
-  SDL_JoystickEventState(SDL_ENABLE);
-  joystick = SDL_JoystickOpen(0);
-
-  SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16 ); 
-  SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-
-  // facciamo una finestra di scrW x scrH pixels
-  win=SDL_CreateWindow(argv[0], 0, 0, scrW, scrH, SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
-
-  //Create our opengl context and attach it to our window
-  mainContext=SDL_GL_CreateContext(win);
-
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_LIGHTING);
-  glEnable(GL_LIGHT0);
-  glEnable(GL_NORMALIZE); // opengl, per favore, rinormalizza le normali 
-                          // prima di usarle
-  //glEnable(GL_CULL_FACE);
-  glFrontFace(GL_CW); // consideriamo Front Facing le facce ClockWise
-  glEnable(GL_COLOR_MATERIAL);
-  glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-  glEnable(GL_POLYGON_OFFSET_FILL); // caro openGL sposta i 
-                                    // frammenti generati dalla
-                                    // rasterizzazione poligoni
-  glPolygonOffset(1,1);             // indietro di 1
-  
-  if (!LoadTexture(0,(char *)"Resources/logo.jpg")) return 0;
-  if (!LoadTexture(1,(char *)"Resources/envmap_flipped.jpg")) return 0;
-  if (!LoadTexture(2,(char *)"Resources/sky_ok.jpg")) return -1;
- 
-  bool done=0;
-  while (!done) {
-    
-    SDL_Event e;
-    
-    // guardo se c'e' un evento:
-    if (SDL_PollEvent(&e)) {
-     // se si: processa evento
-     switch (e.type) {
-      case SDL_KEYDOWN:
-        bike.controller.EatKey(e.key.keysym.sym, keymap , true);
-        if (e.key.keysym.sym==SDLK_1) cameraType=(cameraType+1)%CAMERA_TYPE_MAX;
-        if (e.key.keysym.sym==SDLK_2) useWireframe=!useWireframe;
-        if (e.key.keysym.sym==SDLK_3) useEnvmap=!useEnvmap;
-        if (e.key.keysym.sym==SDLK_4) useHeadlight=!useHeadlight;
-        if (e.key.keysym.sym==SDLK_5) useShadow=!useShadow;
-        break;
-      case SDL_KEYUP:
-        bike.controller.EatKey(e.key.keysym.sym, keymap , false);
-        break;
-      case SDL_QUIT:  
-          done=1;   break;
-      case SDL_WINDOWEVENT:
-         // dobbiamo ridisegnare la finestra
-          if (e.window.event==SDL_WINDOWEVENT_EXPOSED)
-            rendering(win);
-          else{
-           windowID = SDL_GetWindowID(win);
-           if (e.window.windowID == windowID)  {
-             switch (e.window.event)  {
-                  case SDL_WINDOWEVENT_SIZE_CHANGED:  {
-                     scrW = e.window.data1;
-                     scrH = e.window.data2;
-                     glViewport(0,0,scrW,scrH);
-                     rendering(win);
-                     //redraw(); // richiedi ridisegno
-                     break;
-                  }
-             }
-           }
-         }
-      break;
-        
-      case SDL_MOUSEMOTION:
-        if (e.motion.state & SDL_BUTTON(1) & cameraType==CAMERA_MOUSE) {
-          viewAlpha+=e.motion.xrel;
-          viewBeta +=e.motion.yrel;
-//          if (viewBeta<-90) viewBeta=-90;
-          if (viewBeta<+5) viewBeta=+5; //per non andare sotto la macchina
-          if (viewBeta>+90) viewBeta=+90;
-          // redraw(); // richiedi un ridisegno (non c'e' bisongo: si ridisegna gia' 
-	               // al ritmo delle computazioni fisiche)
-        }
-        break; 
-       
-     case SDL_MOUSEWHEEL:
-       if (e.wheel.y < 0 ) {
-         // avvicino il punto di vista (zoom in)
-         eyeDist=eyeDist*0.9;
-         if (eyeDist<1) eyeDist = 1;
-       };
-       if (e.wheel.y > 0 ) {
-         // allontano il punto di vista (zoom out)
-         eyeDist=eyeDist/0.9;
-       };
-     break;
-
-     case SDL_JOYAXISMOTION: /* Handle Joystick Motion */
-        if( e.jaxis.axis == 0)
-         {
-            if ( e.jaxis.value < -3200  )
-             {
-              bike.controller.Joy(0 , true);
-              bike.controller.Joy(1 , false);                 
-//	      printf("%d <-3200 \n",e.jaxis.value);
-             }
-            if ( e.jaxis.value > 3200  )
-            {
-              bike.controller.Joy(0 , false); 
-              bike.controller.Joy(1 , true);
-//	      printf("%d >3200 \n",e.jaxis.value);
-            }
-            if ( e.jaxis.value >= -3200 && e.jaxis.value <= 3200 )
-             {
-              bike.controller.Joy(0 , false);
-              bike.controller.Joy(1 , false);                 
-//	      printf("%d in [-3200,3200] \n",e.jaxis.value);
-             }            
-	    rendering(win);
-            //redraw();
-        }
-        break;
-      case SDL_JOYBUTTONDOWN: /* Handle Joystick Button Presses */
-        if ( e.jbutton.button == 0 )
-        {
-           bike.controller.Joy(2 , true);
-//	   printf("jbutton 0\n");
-        }
-        if ( e.jbutton.button == 2 )
-        {
-           bike.controller.Joy(3 , true);
-//	   printf("jbutton 2\n");
-        }
-        break; 
-      case SDL_JOYBUTTONUP: /* Handle Joystick Button Presses */
-           bike.controller.Joy(2 , false);
-           bike.controller.Joy(3 , false);
-        break; 
-     }
-    } else {
+void idleFunction() {
       // nessun evento: siamo IDLE
       
-      Uint32 timeNow=SDL_GetTicks(); // che ore sono?
+      int timeNow = glutGet(GLUT_ELAPSED_TIME); // che ore sono?
       
       if (timeLastInterval+fpsSampling<timeNow) {
         fps = 1000.0*((float)fpsNow) /(timeNow-timeLastInterval);
@@ -567,22 +342,86 @@ static int keymap[Controller::NKEYS] = {SDLK_a, SDLK_d, SDLK_w, SDLK_s};
       while (nstep*PHYS_SAMPLING_STEP < timeNow ) {
         bike.DoStep();
         nstep++;
-        doneSomething=true;
-        timeNow=SDL_GetTicks();
-        if (guardia++>1000) {done=true; break;} // siamo troppo lenti!
+        doneSomething = true;
+        timeNow = glutGet(GLUT_ELAPSED_TIME);
+        if (guardia++>1000) { exit(11); } // siamo troppo lenti!
       }
       
-      if (doneSomething) 
-        rendering(win);
+      if (doneSomething) {
+          rendering();
+      }
       //redraw();
+
       else {
         // tempo libero!!!
       }
-    }
-  }
-SDL_GL_DeleteContext(mainContext);
-SDL_DestroyWindow(win);
-SDL_Quit ();
+}
+
+void mouseHandler(int button, int state, int x, int y) {
+  //   if (e.motion.state & button == 1 & cameraType==CAMERA_MOUSE) {
+  //           viewAlpha+=e.motion.xrel;
+  //           viewBeta +=e.motion.yrel;
+  // //          if (viewBeta<-90) viewBeta=-90;
+  //           if (viewBeta<+5) viewBeta=+5; //per non andare sotto la macchina
+  //           if (viewBeta>+90) viewBeta=+90;
+  //           // redraw(); // richiedi un ridisegno (non c'e' bisongo: si ridisegna gia' 
+  //                 // al ritmo delle computazioni fisiche)
+
+  /*if (e.wheel.y < 0 ) {
+         // avvicino il punto di vista (zoom in)
+         eyeDist=eyeDist*0.9;
+         if (eyeDist<1) eyeDist = 1;
+       };
+       if (e.wheel.y > 0 ) {
+         // allontano il punto di vista (zoom out)
+         eyeDist=eyeDist/0.9;
+       };*/
+
+}
+
+
+int main(int argc, char* argv[])
+{
+  glutInit( &argc, argv );
+
+  glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
+  glutInitWindowSize( scrH, scrW );
+
+  glutCreateWindow( "CG2018 Di Vincenzo" );
+
+  //Create our opengl context
+  // glewExperimental = GL_TRUE; 
+  // glewInit();
+
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
+  glEnable(GL_NORMALIZE); // opengl, per favore, rinormalizza le normali 
+                          // prima di usarle
+  //glEnable(GL_CULL_FACE);
+  glFrontFace(GL_CW); // consideriamo Front Facing le facce ClockWise
+
+  glEnable(GL_COLOR_MATERIAL);
+  glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+  glEnable(GL_POLYGON_OFFSET_FILL); // caro openGL sposta i 
+                                    // frammenti generati dalla
+                                    // rasterizzazione poligoni
+  glPolygonOffset(1,1);             // indietro di 1
+  
+  if (!LoadTexture(0,(char *)"Resources/logo.jpg")) return 0;
+  if (!LoadTexture(1,(char *)"Resources/envmap_flipped.jpg")) return 0;
+  if (!LoadTexture(2,(char *)"Resources/sky_ok.jpg")) return -1;
+
+  glutDisplayFunc(rendering);
+
+  glutKeyboardUpFunc(keyboardUpHandler);
+  glutKeyboardFunc(keyboardDownHandler);
+  glutMouseFunc(mouseHandler);
+  glutIdleFunc(idleFunction);
+
+  glutMainLoop();
+ 
+    
 return (0);
 }
 

@@ -1,15 +1,5 @@
 #pragma once
 
-#include <stdio.h>
-#include <math.h>
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#else
-#include <GL/gl.h>
-#include <GL/glu.h>
-#endif
-
 #include <vector> // la classe vector di STL 
 #include <unordered_map>
 
@@ -68,6 +58,7 @@ class World {
         Tile* last_tile = nullptr; 
 
         std::vector<Tile*> tiles;
+        std::vector<float> vertices;
 
         void drawSphere(double r, int lats, int longs) {
             int i, j;
@@ -176,17 +167,24 @@ class World {
             obstacle2->Translate(19, 0, 0);
             tiles.push_back(obstacle);
             tiles.push_back(obstacle2);
+
+            // for (auto tile : tiles) {
+            //     for (float f : tile->model.Flat_Vertices()) {
+            //         vertices.push_back(f);
+            //     }
+            // }
+            
         }
 
         void draw() {
-            glPushMatrix();
-            glColor3f(0.4,0.4,.8);
-            glScalef(0.75, 1.0, 0.75);
-            glTranslatef(0,0.01,0);
-            //pista.RenderNxV();
-            pista.RenderNxF();
-            glPopMatrix();
-
+            // glPushMatrix();
+            // glColor3f(0.4,0.4,.8);
+            // glScalef(0.75, 1.0, 0.75);
+            // glTranslatef(0,0.01,0);
+            // //pista.RenderNxV();
+            // pista.RenderNxF();
+            // glPopMatrix();
+            
             for (auto tile: tiles)
                 tile->Draw();
 

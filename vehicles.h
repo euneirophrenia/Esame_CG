@@ -1,15 +1,5 @@
 #pragma once
 
-#ifdef __APPLE__
-#include <SDL2_image/SDL_image.h>
-    #include <OpenGL/gl.h>
-    #include <OpenGL/glu.h>
-#else
-    #include <SDL2/SDL_image.h>
-    #include <GL/gl.h>
-    #include <GL/glu.h>
-#endif
-
 #include "./Geometry/sMesh.h"
 #include "controller.h"
 #include "world.h"
@@ -211,7 +201,7 @@ class MotorBike : public Vehicle {
             // (a seconda della velocita' sulla z)
             facing = facing - (vzm*grip)*sterzo;
 
-            // rotazione mozzo ruote (a seconda della velocita' sulla z)
+            //rotazione mozzo ruote (a seconda della velocita' sulla z)
             float da ; //delta angolo
             da=(360.0*vzm)/(2.0*M_PI*raggioRuotaA);
             mozzoA+=da;
@@ -229,8 +219,8 @@ class MotorBike : public Vehicle {
             pz+=vz;
 
             float h = world_reference->height_at(px, pz);
-            
             py=h;
+        
         } 
 
 };

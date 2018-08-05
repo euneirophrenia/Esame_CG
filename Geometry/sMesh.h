@@ -1,17 +1,9 @@
 #pragma once
 
-#include <math.h>
-#include <stdio.h>
 #include <string.h>
 #include <vector>
-#ifdef __APPLE__
-    #include <OpenGL/gl.h>
-    #include <OpenGL/glu.h>
-#else
-    #include <GL/gl.h>
-    #include <GL/glu.h>
-#endif
 
+#include "../common.h"
 #include "geometry.h"
 
 #include <algorithm>
@@ -30,6 +22,7 @@ class sMesh {
         std::vector<Face> f;   // vettore di facce
         std::vector<Edge> e;   // vettore di edge
         std::vector<float> flat_vertices;
+        GLuint vao;
                            
     public:  
         // centro del axis aligned bounding box
@@ -47,6 +40,7 @@ class sMesh {
             return v;
         }
 
+
         sMesh() {
             
         }
@@ -61,8 +55,16 @@ class sMesh {
             ComputeNormalsPerFace();
             ComputeNormalsPerVertex();
             ComputeBoundingBox();
-            populateEdges();
             populateFlatVertices();
+            
+            // glGenVertexArrays( 1, &vao );
+            // glBindVertexArray( vao );
+            
+        
+            // // Create and initialize a buffer object
+            // glBufferData( GL_ARRAY_BUFFER, 3*sizeof(float)*v.size(), NULL, GL_STATIC_DRAW );
+            // glBufferSubData( GL_ARRAY_BUFFER, 0, 3*sizeof(float)*v.size(), v.data());
+
         }
 
         void ComputeNormalsPerFace() {
@@ -95,6 +97,13 @@ class sMesh {
                 v[i].n = v[i].n.Normalize();
             }
         
+        }
+
+        void RenderArray() {
+            glEnableClientState(GL_VERTEX_ARRAY);
+            glBindVertexArray(vao);
+            glDrawArrays(GL_TRIANGLES, 0, flat_vertices.size());
+            glDisableClientState(GL_VERTEX_ARRAY);
         }
 
         void RenderWire() {
@@ -411,6 +420,7 @@ class sMesh {
                     flat_vertices.push_back((face.v)[i]->p.X());
                     flat_vertices.push_back((face.v)[i]->p.Y());
                     flat_vertices.push_back((face.v)[i]->p.Z());
+                    
                 }
             }
         }

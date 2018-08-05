@@ -1,8 +1,7 @@
 #pragma once
 
-#include <OpenGL/gl.h>
+#include <OpenGL/gl3.h>
 #include <math.h>
-#include <unordered_map>
 
 // classe Point3: un punto (o vettore) in 3 dimensioni
 class Point3 {
@@ -111,20 +110,6 @@ class Point2 : public Point3 {
 
 };
 
-namespace std {
-
-    template <>
-    struct hash<Point2>{
-        std::size_t operator()(const Point2& k) const {
-            using std::size_t;
-            using std::hash;
-
-            return (std::hash<float>()(k.X()) << 32) | std::hash<float>()(k.Z());
-        }
-    };
-
-}
-
 
 // definiamo Vector3 come SINONIMO di Point3
 // (solo per chiarezza, per distinguere nel codice fra punti e vettori)
@@ -176,4 +161,6 @@ class Face {
             n= -( (v[1]->p - v[0]->p) % (v[2]->p - v[0]->p) ).Normalize();
         }
 };
+
+
 

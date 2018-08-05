@@ -2,8 +2,8 @@ CPP  = g++
 CC   = gcc
 BIN  = CG2018_DiVincenzo
 
-OBJ  = main.o mesh.o
-LINKOBJ  = main.o mesh.o
+OBJ  = main.o glew.o 
+LINKOBJ  = main.o glew.o
 
 STD = c++11
 
@@ -13,25 +13,24 @@ ifeq ($(OS),Darwin)
 ## caso Mac OS
 $(info Mac OS detected)
 FRMPATH=-F /Library/Frameworks
-LIBS =  -framework OpenGL -framework SDL2 -framework SDL2_image -lm
-$(info SDL2 libraries must be in: $(FRMPATH))
+LIBS =  -framework OpenGL -framework GLUT -framework SDL2_image -lm
+$(info GLUT libraries must be in: $(FRMPATH))
 else
 ifeq ($(OS),MINGW32_NT-6.1)
 ## caso Windows MinGW
 $(info Windows MinGW detected)
-FRMPATH = -IC:\MinGW\include
-LIBS = -LC:\MinGW\lib -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lopengl32 -lglu32 -lm
+FRMPATH = -IC:\MinGW\freeglut\include
+LDFLAGS = -LC:\MinGW\freeglut\lib -lfreeglut -LC:\MinGW\lib -lmingw32 -lopengl32 -lglu32 -lSDL2_image -lm
 else
 ##caso Linux
 $(info Linux detected)
-#framework presenti solo nel caso MAC OS
-FRMPATH =
-LIBS = -lGL -lGLU -lSDL2 -lSDL2_image -lm
+FRMPATH=
+LDFLAGS = -lGL -lGLU -lglut -lSDL2_image -lm
 endif
 endif
 
-LDFLAGS="-L./Geometry" 
-CFLAGS="-I./Geometry"
+LDFLAGS=$(LDFLAGS) "-L./Geometry"  "-L./Glew"
+CFLAGS=$(CFLAGS) "-I./Geometry" "-I./Glew"
 
 FLAG = -Wno-deprecated
 RM = rm -f
@@ -47,5 +46,5 @@ $(BIN): $(OBJ)
 main.o: main.cpp
 	$(CPP) -std=$(STD) -c $(FRMPATH) main.cpp -o main.o
 
-mesh.o: Geometry/mesh.cpp
-	$(CPP) -std=$(STD) -c $(FRMPATH) Geometry/mesh.cpp -o mesh.o
+glew.o: Glew/glew.c
+	$(CPP) -std=$(STD) -c $(FRMPATH) Glew/glew.c -o glew.o

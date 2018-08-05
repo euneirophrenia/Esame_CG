@@ -1,88 +1,27 @@
 #pragma once
 
-// classe Vertex: 
-// i vertici della mesh
-class Vertex
-{ 
-public: 
-  Point3 p; // posizione
+#include "../common.h"
+#include <vector>
+#include "sMesh.h"
 
-  // attributi per verice
-  Vector3 n; // normale (per vertice)
-};
 
-class Edge
-{
-public: 
-  Vertex* v[2]; // due puntatori a Vertice (i due estremi dell'edge)
+class Mesh : public sMesh {
   
-  Edge(Vertex* a, Vertex*b) {
-      v[0] = a;
-      v[1] = b;
-  }
+  protected:
+      GLuint program;
+      GLuint vao; 
 
-  bool operator== (Edge other) {
-      return (v[0]==other.v[0] && v[1]==other.v[1]) || (v[0]==other.v[1] && v[1] == other.v[0]);
-  }
+  public:
 
-};
+      Mesh((char*) modelname, (char*) vShader, (char*)fShader) : sMesh(modelname) {
+          program = initShader(vShader, fShader);
+          glGenVertexArrays(1, &vao);
 
-class Face
-{
-public: 
-  Vertex* v[3]; // tre puntatori a Vertice (i tre vertici del triangolo)
-  
-  // costruttore
-  Face(Vertex* a, Vertex* b, Vertex* c){
-    v[0]=a; v[1]=b; v[2]=c;
-  }
-  
-  // attributi per faccia
-  Vector3 n; // normale (per faccia)
-  
-  // computa la normale della faccia
-  void ComputeNormal() {
-    n= -( (v[1]->p - v[0]->p) % (v[2]->p - v[0]->p) ).Normalize();
-  }
-  
-  // attributi per wedge
-  
-};
+          //todo: create a list of point4 for the vertices
+          //submit that in a buffer
+          //link the position in the buffer to the position in the shader
+      }
 
-class Mesh
-{
 
-protected:
-  std::vector<Vertex> v; // vettore di vertici
-  std::vector<Face> f;   // vettore di facce
-  std::vector<Edge> e;   // vettore di edge (per ora, non usato)
 
-                           
-public:  
-  
-  // costruttore con caricamento
-  Mesh(char *filename){
-    LoadFromObj(filename);
-    ComputeNormalsPerFace();
-    ComputeNormalsPerVertex();
-    ComputeBoundingBox();
-
-  }
-  
-  // metodi
-  virtual void RenderNxF(); // manda a schermo la mesh Normali x Faccia
-  virtual void RenderNxV(); // manda a schermo la mesh Normali x Vertice
-  virtual void RenderWire(); // manda a schermo la mesh in wireframe
-  
-  bool LoadFromObj(char* filename); //  carica la mesh da un file OFF
-  
-  void ComputeNormalsPerFace();
-  void ComputeNormalsPerVertex();
-  
-  void ComputeBoundingBox();
-
-  // centro del axis aligned bounding box
-  Point3 Center(){ return (bbmin+bbmax)/2.0; };
-  
-  Point3 bbmin,bbmax; // bounding box 
 };

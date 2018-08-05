@@ -1,14 +1,5 @@
 #pragma once
 
-#ifdef __APPLE__
-#include <SDL2_image/SDL_image.h>
-    #include <OpenGL/gl.h>
-    #include <OpenGL/glu.h>
-#else
-    #include <SDL2/SDL_image.h>
-    #include <GL/gl.h>
-    #include <GL/glu.h>
-#endif
 #include "./Geometry/sMesh.h"
 #include <cmath>
 
