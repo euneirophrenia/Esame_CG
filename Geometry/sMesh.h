@@ -60,8 +60,7 @@ class sMesh {
         }
 
         void BindVAO() {
-            glGenVertexArrays( 1, &vao );
-            glBindVertexArray( vao );
+            glGenBuffers( 1, &vao );
             
             // Create and initialize a buffer object
             glBindBuffer(GL_ARRAY_BUFFER, vao);
@@ -104,7 +103,7 @@ class sMesh {
 
         void RenderArray() {
             glEnableClientState(GL_VERTEX_ARRAY);
-            glBindVertexArray(vao);
+            glBindBuffer(GL_ARRAY_BUFFER, vao);
             glVertexPointer(3, GL_FLOAT, sizeof(Point3), BUFFER_OFFSET(0));
             if (useWireframe)
                 glDrawArrays(GL_LINES, 0, sizeof(Point3)*v.size());

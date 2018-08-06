@@ -86,6 +86,7 @@ class MotorBike : public Vehicle {
             glRotatef(mozzoA, 0, 0, 1); 
             glTranslate( -front_wheel->Center());
             front_wheel->RenderNxV();
+            // front_wheel->RenderArray();
             glPopMatrix();
 
             glPushMatrix();
@@ -93,6 +94,7 @@ class MotorBike : public Vehicle {
             glRotatef(mozzoP, 0, 0, 1); 
             glTranslate( -back_wheel->Center());
             back_wheel->RenderNxV();
+            // back_wheel->RenderArray();
             glPopMatrix();
 
 
@@ -130,6 +132,7 @@ class MotorBike : public Vehicle {
             // glPopMatrix();
             
             carlinga->RenderNxV(); // rendering delle mesh carlinga usando normali per vertice
+            // carlinga->RenderArray();
 
             glPopMatrix();
         }
@@ -173,6 +176,12 @@ class MotorBike : public Vehicle {
             
             grip = 0.45; // quanto il facing macchina si adegua velocemente allo sterzo
 
+        }
+
+        void BindVAOs() {
+            back_wheel->BindVAO();
+            front_wheel->BindVAO();
+            carlinga->BindVAO();
         }
 
         inline void DoStep() {

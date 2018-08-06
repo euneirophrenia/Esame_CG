@@ -293,7 +293,7 @@ void rendering(){
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_LIGHTING);
   
-  glFinish();
+  //glFinish();
   // ho finito: buffer di lavoro diventa visibile
   glutSwapBuffers();
   glutPostRedisplay();
