@@ -2,8 +2,8 @@ CPP  = g++
 CC   = gcc
 BIN  = CG2018_DiVincenzo
 
-OBJ  = main.o glew.o 
-LINKOBJ  = main.o glew.o
+OBJ  = main.o
+LINKOBJ  = main.o
 
 STD = c++11
 
@@ -45,6 +45,3 @@ $(BIN): $(OBJ)
 
 main.o: main.cpp
 	$(CPP) -std=$(STD) -c $(FRMPATH) main.cpp -o main.o
-
-glew.o: Glew/glew.c
-	$(CPP) -std=$(STD) -c $(FRMPATH) Glew/glew.c -o glew.o

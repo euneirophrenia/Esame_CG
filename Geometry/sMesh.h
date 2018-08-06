@@ -21,7 +21,7 @@ class sMesh {
         std::vector<Vertex> v; // vettore di vertici
         std::vector<Face> f;   // vettore di facce
         std::vector<Edge> e;   // vettore di edge
-        std::vector<float> flat_vertices;
+        std::vector<Point3> points;
         GLuint vao;
                            
     public:  
@@ -56,15 +56,18 @@ class sMesh {
             ComputeNormalsPerVertex();
             ComputeBoundingBox();
             populateFlatVertices();
-            
-            // glGenVertexArrays( 1, &vao );
-            // glBindVertexArray( vao );
-            
-        
-            // // Create and initialize a buffer object
-            // glBufferData( GL_ARRAY_BUFFER, 3*sizeof(float)*v.size(), NULL, GL_STATIC_DRAW );
-            // glBufferSubData( GL_ARRAY_BUFFER, 0, 3*sizeof(float)*v.size(), v.data());
 
+        }
+
+        void BindVAO() {
+            glGenVertexArrays( 1, &vao );
+            glBindVertexArray( vao );
+            
+            // Create and initialize a buffer object
+            glBindBuffer(GL_ARRAY_BUFFER, vao);
+
+            //why 6? I don't know, i thought 1* would be enough, but it is not, while 6 is perfect, why? god knows
+            glBufferData(GL_ARRAY_BUFFER, 6*sizeof(Point3)*v.size(), points.data(), GL_STATIC_DRAW); // why????? 
         }
 
         void ComputeNormalsPerFace() {
@@ -102,7 +105,11 @@ class sMesh {
         void RenderArray() {
             glEnableClientState(GL_VERTEX_ARRAY);
             glBindVertexArray(vao);
-            glDrawArrays(GL_TRIANGLES, 0, flat_vertices.size());
+            glVertexPointer(3, GL_FLOAT, sizeof(Point3), BUFFER_OFFSET(0));
+            if (useWireframe)
+                glDrawArrays(GL_LINES, 0, sizeof(Point3)*v.size());
+            else   
+                glDrawArrays(GL_TRIANGLES, 0, sizeof(Point3)*v.size());
             glDisableClientState(GL_VERTEX_ARRAY);
         }
 
@@ -417,9 +424,7 @@ class sMesh {
         void populateFlatVertices() {
             for (auto face : f) {
                 for (int i=0; i<3; i++) {
-                    flat_vertices.push_back((face.v)[i]->p.X());
-                    flat_vertices.push_back((face.v)[i]->p.Y());
-                    flat_vertices.push_back((face.v)[i]->p.Z());
+                    points.push_back((face.v)[i]->p);
                     
                 }
             }

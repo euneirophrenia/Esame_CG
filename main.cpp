@@ -29,8 +29,9 @@ int cameraType=0;
 static int keymap[Controller::NKEYS] = {'a', 'd', 'w', 's'};
 
 World world;
-
 MotorBike bike(&world); // la nostra macchina
+
+
 int nstep=0; // numero di passi di FISICA fatti fin'ora
 const int PHYS_SAMPLING_STEP=10; // numero di millisec che un passo di fisica simula
 
@@ -292,10 +293,11 @@ void rendering(){
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_LIGHTING);
   
-  
   glFinish();
   // ho finito: buffer di lavoro diventa visibile
   glutSwapBuffers();
+  glutPostRedisplay();
+
 }
 
 // void redraw(){
@@ -316,6 +318,7 @@ void keyboardDownHandler(unsigned char key, int x, int y) {
         if (key=='3') useEnvmap=!useEnvmap;
         if (key=='4') useHeadlight=!useHeadlight;
         if (key=='5') useShadow=!useShadow;
+        if (key=='q') exit(0);
 
 }
 
@@ -388,10 +391,7 @@ int main(int argc, char* argv[])
   glutInitWindowSize( scrH, scrW );
 
   glutCreateWindow( "CG2018 Di Vincenzo" );
-
-  //Create our opengl context
-  // glewExperimental = GL_TRUE; 
-  // glewInit();
+  world.BindVAOs(); // setup the VAOs for later efficiency
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_LIGHTING);

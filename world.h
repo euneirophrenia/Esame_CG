@@ -164,9 +164,13 @@ class World {
         World() {
             ExponentialSlope* obstacle = new ExponentialSlope( (char*) "./WIP/writings.obj");
             ExponentialSlope* obstacle2 = new ExponentialSlope( (char*) "./WIP/writings.obj");
+            FlatTile* flat = new FlatTile((char*) "./WIP/flat.obj");
             obstacle2->Translate(19, 0, 0);
+            flat->Translate(-19, 0, 0) ;
+            flat->Scale(1, 1, 0.2);
             tiles.push_back(obstacle);
             tiles.push_back(obstacle2);
+            tiles.push_back(flat);
 
             // for (auto tile : tiles) {
             //     for (float f : tile->model.Flat_Vertices()) {
@@ -190,6 +194,12 @@ class World {
 
             drawFloor();
             drawSky();
+        }
+
+        void BindVAOs() {
+            for (auto tile: tiles) {
+                tile->BindVAO();
+            }
         }
 
 

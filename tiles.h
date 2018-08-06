@@ -8,6 +8,7 @@ class Tile {
     protected:
         Point3 center; //position of the center of the tile in world coordinates (the origin of the tile-coordinates)
         float rotation = 0; //rotation between world and tile-coords
+        Vector3 scale = Vector3(1,1,1);
 
     public:
         sMesh model;
@@ -26,11 +27,25 @@ class Tile {
             rotation+=angle;
         }
 
+        inline void Scale(float sx, float sy, float sz) {
+            scale.coord[0] *= sx;
+            scale.coord[1] *= sy;
+            scale.coord[2] *= sz;
+        }
+
+        inline void Scale(Vector3 s) {
+            Scale(s.coord[0], s.coord[1], s.coord[2]);
+        }
+
+        inline void BindVAO() {
+            model.BindVAO();
+        }
+
         //todo:: also handle scaling!!
 
         inline bool hasInside(Point3 point){
-            Point3 max = center + model.bbmax;
-            Point3 min = center + model.bbmin;
+            Point3 max = center + (model.bbmax*scale);
+            Point3 min = center + (model.bbmin*scale);
             return point.X() <= max.X() && point.X() >= min.X() &&
                     point.Z() <= max.Z() && point.Z() >= min.Z();
         }
@@ -43,7 +58,8 @@ class Tile {
             glPushMatrix();
                 glTranslatef(center.X(), 0, center.Y());
                 glRotatef(rotation, 0, 1, 0);
-                model.RenderNxV();
+                glScalef(scale.X(), scale.Y(), scale.Z());
+                model.RenderArray();
             glPopMatrix();
         }
 
@@ -57,7 +73,7 @@ class FlatTile : public Tile {
         explicit FlatTile(char* filename) : Tile(filename) {}
 
         float height_at(Point3 point) {
-            return 0; //it's flat, what do you mean "that's it?"
+            return model.bbmax.Y() * scale.Y();
         }
 
 };
@@ -80,7 +96,7 @@ class ExponentialSlope : public Tile {
             tile_x = cosine * tile_x + sine * tile_z;  // i don't really need the other coordinate, it is not used in this case
         
             //compute the actual height, according to the custom shape i made
-            return pow(1.5, -abs(tile_x) + 5); //don't ask why
+            return center.Y() + pow(1.5, -abs(tile_x) + 5); //don't ask why
             // the truth is: i first created the mesh, making it "look good", then I spent a good hour trying to find its damn equation
             // and it turns out that can be written like that
             // when handling also scaling, it might get a bit hard do adjust, but I don't think i will ever need that
