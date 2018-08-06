@@ -26,6 +26,8 @@ bool useHeadlight=false;
 bool useShadow=true;
 int cameraType=0;
 
+int previous_mouse_position[2] = {0, 0};
+
 static int keymap[Controller::NKEYS] = {'a', 'd', 'w', 's'};
 
 World world;
@@ -157,7 +159,7 @@ void setCamera(){
                 gluLookAt(ex,ey,ez,cx,cy,cz,0.0,1.0,0.0);
                 break;
         case CAMERA_TOP_FIXED:
-                camd = 0.5;
+                camd = 0.6;
                 camh = 0.55;
                 angle = bike.facing + 40.0;
                 cosff = cos(angle*M_PI/180.0);
@@ -293,21 +295,17 @@ void rendering(){
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_LIGHTING);
   
-  //glFinish();
-  // ho finito: buffer di lavoro diventa visibile
+  //glFinish(); //this one makes everything wait for every call to finish
   glutSwapBuffers();
   glutPostRedisplay();
 
 }
 
-// void redraw(){
-//   // ci automandiamo un messaggio che (s.o. permettendo)
-//   // ci fara' ridisegnare la finestra
-//   SDL_Event e;
-//   e.type=SDL_WINDOWEVENT;
-//   e.window.event=SDL_WINDOWEVENT_EXPOSED;
-//   SDL_PushEvent(&e);
-// }
+void reshapeHandler(int w, int h){
+  scrW = w;
+  scrH = h;
+  rendering();
+}
 
 //These functions right here, instead, control the UI (and kinda the controller)
 
@@ -360,26 +358,33 @@ void idleFunction() {
       }
 }
 
-void mouseHandler(int button, int state, int x, int y) {
-  //   if (e.motion.state & button == 1 & cameraType==CAMERA_MOUSE) {
-  //           viewAlpha+=e.motion.xrel;
-  //           viewBeta +=e.motion.yrel;
-  // //          if (viewBeta<-90) viewBeta=-90;
-  //           if (viewBeta<+5) viewBeta=+5; //per non andare sotto la macchina
-  //           if (viewBeta>+90) viewBeta=+90;
-  //           // redraw(); // richiedi un ridisegno (non c'e' bisongo: si ridisegna gia' 
-  //                 // al ritmo delle computazioni fisiche)
+void motionHandler(int x, int y) {
+            viewAlpha+= x - previous_mouse_position[0];
+            viewBeta += y - previous_mouse_position[1];
+  //          if (viewBeta<-90) viewBeta=-90;
+            if (viewBeta<+5) viewBeta=+5; //per non andare sotto la macchina
+            if (viewBeta>+90) viewBeta=+90;
+            previous_mouse_position[0] = x;
+            previous_mouse_position[1] = y;
+}
 
-  /*if (e.wheel.y < 0 ) {
+void mouseHandler(int button, int state, int x, int y) {
+
+  if (button == GLUT_LEFT_BUTTON && state==GLUT_DOWN && cameraType==CAMERA_MOUSE) {
+            //start listening for motion
+            glutMotionFunc(motionHandler);
+  }
+
+  if (button == GLUT_LEFT_BUTTON && state == GLUT_UP && cameraType == CAMERA_MOUSE)
+      glutMotionFunc(NULL); //unbind motion
+
+  if (button == GLUT_MIDDLE_BUTTON && state == GLUT_DOWN) {
          // avvicino il punto di vista (zoom in)
          eyeDist=eyeDist*0.9;
          if (eyeDist<1) eyeDist = 1;
-       };
-       if (e.wheel.y > 0 ) {
-         // allontano il punto di vista (zoom out)
-         eyeDist=eyeDist/0.9;
-       };*/
-
+  }
+  if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
+    eyeDist=eyeDist/0.9;
 }
 
 
@@ -387,17 +392,17 @@ int main(int argc, char* argv[])
 {
   glutInit( &argc, argv );
 
-  glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
+  glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH); // colori + double buffer + z-buffer
   glutInitWindowSize( scrH, scrW );
 
   glutCreateWindow( "CG2018 Di Vincenzo" );
-  world.BindVAOs(); // setup the VAOs for later efficiency
+  world.BindVAOs(); // setup the buffers so that we don't need to resend all the geometry to the GPU when drawing the world
+  bike.BindVAOs();
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
-  glEnable(GL_NORMALIZE); // opengl, per favore, rinormalizza le normali 
-                          // prima di usarle
+  glEnable(GL_NORMALIZE); // opengl, per favore, rinormalizza le normali prima di usarle
   //glEnable(GL_CULL_FACE);
   glFrontFace(GL_CW); // consideriamo Front Facing le facce ClockWise
 
@@ -408,8 +413,8 @@ int main(int argc, char* argv[])
                                     // rasterizzazione poligoni
   glPolygonOffset(1,1);             // indietro di 1
   
-  if (!LoadTexture(0,(char *)"Resources/logo.jpg")) return 0;
-  if (!LoadTexture(1,(char *)"Resources/envmap_flipped.jpg")) return 0;
+  if (!LoadTexture(0,(char *)"Resources/logo.jpg")) return -1;
+  if (!LoadTexture(1,(char *)"Resources/envmap_flipped.jpg")) return -1;
   if (!LoadTexture(2,(char *)"Resources/sky_ok.jpg")) return -1;
 
   glutDisplayFunc(rendering);
@@ -418,6 +423,8 @@ int main(int argc, char* argv[])
   glutKeyboardFunc(keyboardDownHandler);
   glutMouseFunc(mouseHandler);
   glutIdleFunc(idleFunction);
+  glutReshapeFunc(reshapeHandler);
+  glutMotionFunc(NULL);
 
   glutMainLoop();
  

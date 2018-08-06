@@ -71,13 +71,15 @@ class MotorBike : public Vehicle {
         sMesh* back_wheel = new sMesh((char*) "./Resources/Bike/backwheel.obj");
         sMesh* front_wheel = new sMesh((char*) "./Resources/Bike/frontwheel.obj");
 
+        sMesh* pilot = new sMesh((char*) "./Resources/Bike/pilot.obj");
+
         void RenderAllParts(bool usecolor) {
             // disegna la carliga con una mesh
             glPushMatrix();
             glScalef(4, 4, 4);
             glRotatef(90, 0, 1, 0);
 
-            glRotatef( sterzo * vzm / 0.12 , 1, 0, 0); // inclinare la moto durante le curve
+            glRotatef( sterzo * -abs(vzm)  / 0.12 , 1, 0, 0); // inclinare la moto durante le curve
         
             // ------- Wheels ----------
             glPushMatrix();
@@ -85,7 +87,7 @@ class MotorBike : public Vehicle {
             glTranslate( front_wheel->Center());  //rotazione ruota
             glRotatef(mozzoA, 0, 0, 1); 
             glTranslate( -front_wheel->Center());
-            front_wheel->RenderNxV();
+            front_wheel->RenderNxF();
             // front_wheel->RenderArray();
             glPopMatrix();
 
@@ -93,7 +95,7 @@ class MotorBike : public Vehicle {
             glTranslate( back_wheel->Center());  //rotazione ruota
             glRotatef(mozzoP, 0, 0, 1); 
             glTranslate( -back_wheel->Center());
-            back_wheel->RenderNxV();
+            back_wheel->RenderNxF();
             // back_wheel->RenderArray();
             glPopMatrix();
 
@@ -132,7 +134,7 @@ class MotorBike : public Vehicle {
             // glPopMatrix();
             
             carlinga->RenderNxV(); // rendering delle mesh carlinga usando normali per vertice
-            // carlinga->RenderArray();
+            pilot->RenderNxF();
 
             glPopMatrix();
         }
