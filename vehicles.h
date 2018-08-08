@@ -3,6 +3,7 @@
 #include "./Geometry/sMesh.h"
 #include "controller.h"
 #include "world.h"
+#include "utils.h"
 
 extern bool useHeadlight;
 extern bool useShadow;
@@ -25,7 +26,7 @@ class Vehicle {
             glPushMatrix();
                 
             glTranslatef(px,py,pz);
-            glRotatef(facing, 0,1,0);
+            glRotatef(facing, 0, 1, 0);
 
             // sono nello spazio MACCHINA
 
@@ -44,7 +45,6 @@ class Vehicle {
             } 
             glPopMatrix(); 
             
-            glPopMatrix();
         }
 
         virtual void DoStep() = 0; // computa un passo del motore fisico
@@ -57,6 +57,7 @@ class Vehicle {
         float accMax, attritoX, attritoY, attritoZ, grip;
         float raggioRuotaA, raggioRuotaP;
         float mozzoA, mozzoP, sterzo;
+        float step = 0.1;
 };
 
 
@@ -64,7 +65,10 @@ class MotorBike : public Vehicle {
 
     private:
         float vxm, vym, vzm; // velocità nello spazio veicolo
+        Vector3 normaldirection;
+        float inclination;
         World* world_reference;
+        float length;
 
     protected:
         sMesh* carlinga = new sMesh((char*)"./Resources/Bike/carlinga.obj");
@@ -79,62 +83,43 @@ class MotorBike : public Vehicle {
             glScalef(4, 4, 4);
             glRotatef(90, 0, 1, 0);
 
+            glRotatef(inclination, normaldirection.X(), normaldirection.Y(), normaldirection.Z());
+
             glRotatef( sterzo * -abs(vzm)  / 0.12 , 1, 0, 0); // inclinare la moto durante le curve
         
             // ------- Wheels ----------
             glPushMatrix();
-
-            glTranslate( front_wheel->Center());  //rotazione ruota
-            glRotatef(mozzoA, 0, 0, 1); 
-            glTranslate( -front_wheel->Center());
-            front_wheel->RenderNxF();
-            // front_wheel->RenderArray();
+                glTranslate( front_wheel->Center());  //rotazione ruota
+                glRotatef(mozzoA, 0, 0, 1); 
+                glTranslate( -front_wheel->Center());
+                if (usecolor) glColor3f(.6,.6,.6);
+                if (usecolor) SetupTexture(0, front_wheel->bbmin, front_wheel->bbmax);
+                if (usecolor) glColor3f(0.9,0.9,0.9);
+                front_wheel->RenderNxF();
+                glDisable(GL_TEXTURE_2D);
             glPopMatrix();
 
             glPushMatrix();
-            glTranslate( back_wheel->Center());  //rotazione ruota
-            glRotatef(mozzoP, 0, 0, 1); 
-            glTranslate( -back_wheel->Center());
-            back_wheel->RenderNxF();
-            // back_wheel->RenderArray();
+                glTranslate( back_wheel->Center());  //rotazione ruota
+                glRotatef(mozzoP, 0, 0, 1); 
+                glTranslate( -back_wheel->Center());
+
+                if (usecolor) glColor3f(.6,.6,.6);
+                if (usecolor) SetupTexture(0, back_wheel->bbmin, back_wheel->bbmax);
+                if (usecolor) glColor3f(0.9,0.9,0.9);
+                back_wheel->RenderNxF();
+                glDisable(GL_TEXTURE_2D);
             glPopMatrix();
 
-
-
             if (usecolor) glEnable(GL_LIGHTING);
-            
-            // glPushMatrix();
-            // glTranslate( front_wheel->Center() );
-            // glScalef(4,4,4);
-            // glRotatef( sterzo, 0, 1, 0);
-            // glRotatef(-mozzoA, 1, 0, 0);
-            // glTranslate( -front_wheel->Center());
-            
-            // if (usecolor) glColor3f(.6,.6,.6);
-            // //if (usecolor) SetupWheelTexture(wheelFR1.bbmin,wheelFR1.bbmax);
-            // front_wheel->RenderNxF(); // la ruota viene meglio FLAT SHADED - normali per faccia
-            //                         // provare x credere
-            // glDisable(GL_TEXTURE_2D);
-            // if (usecolor) glColor3f(0.9,0.9,0.9);
-            // front_wheel->RenderNxV();
-            // glPopMatrix();
-        
-            // glPushMatrix();
-            // glScalef(4,4,4);
-            // glTranslate(  back_wheel->Center() );
-            // glRotatef(-mozzoA,1,0,0);
-            // glTranslate( -back_wheel->Center() );
 
-            // if (usecolor) glColor3f(.6,.6,.6);
-            // // if (usecolor) SetupWheelTexture(wheelBR1.bbmin,wheelBR1.bbmax);
-            // back_wheel->RenderNxF();
-            // glDisable(GL_TEXTURE_2D);
-            // if (usecolor) glColor3f(0.9,0.9,0.9);
-            // back_wheel->RenderNxV();
-            // glPopMatrix();
-            
             carlinga->RenderNxV(); // rendering delle mesh carlinga usando normali per vertice
-            pilot->RenderNxF();
+
+            if (usecolor)
+
+            if (usecolor) SetupTexture(3, pilot->bbmin, pilot->bbmax);
+            pilot->RenderArray(); // to be more efficient
+            glDisable(GL_TEXTURE_2D);
 
             glPopMatrix();
         }
@@ -178,12 +163,15 @@ class MotorBike : public Vehicle {
             
             grip = 0.45; // quanto il facing macchina si adegua velocemente allo sterzo
 
+            length = 4*(carlinga->bbmax.X() - carlinga->bbmin.X());
+
         }
 
-        void BindVAOs() {
-            back_wheel->BindVAO();
-            front_wheel->BindVAO();
-            carlinga->BindVAO();
+        void BindBuffers() {
+            back_wheel->BindBuffers(GL_DYNAMIC_DRAW);
+            front_wheel->BindBuffers(GL_DYNAMIC_DRAW);
+            carlinga->BindBuffers(GL_DYNAMIC_DRAW);
+            pilot->BindBuffers(GL_STATIC_DRAW);
         }
 
         inline void DoStep() {
@@ -230,8 +218,28 @@ class MotorBike : public Vehicle {
             pz+=vz;
 
             float h = world_reference->height_at(px, pz);
-            py=h;
-        
+            if (py<=h) {
+                py=h; 
+            }
+            if (py > h + step) {
+                py -= step;
+            }
+
+            auto tmp = world_reference->normal_at(Point3(px, py, pz));
+            auto velocity = Vector3(vx, vy, vz);
+            auto dotp = tmp*velocity; 
+            dotp = dotp / (tmp.modulo() * velocity.modulo());
+            inclination = dotp.coord[0] + dotp.coord[1] + dotp.coord[2];
+            inclination = 90 - (180 * acos(inclination) / M_PI);
+            normaldirection = Vector3(0, 0, vzm >=0 ? -1 : 1);
+
+
         } 
+
+        void Log() {
+            printf("- Position     :\t(%f, %f, %f)\n", px, py, pz);
+            printf("- Velocity     :\t(%f, %f, %f)\n", vx, vy, vz);
+            printf("- Skew         :\t%f\n", inclination);
+        }
 
 };

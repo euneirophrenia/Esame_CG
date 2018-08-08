@@ -22,7 +22,8 @@ class sMesh {
         std::vector<Face> f;   // vettore di facce
         std::vector<Edge> e;   // vettore di edge
         std::vector<Point3> points;
-        GLuint vao;
+        std::vector<Vector3> normals; 
+        GLuint vertexBuffer, normalBuffer;
                            
     public:  
         // centro del axis aligned bounding box
@@ -55,18 +56,20 @@ class sMesh {
             ComputeNormalsPerFace();
             ComputeNormalsPerVertex();
             ComputeBoundingBox();
-            populateFlatVertices();
+            populateBuffers();
 
         }
 
-        void BindVAO() {
-            glGenBuffers( 1, &vao );
-            
-            // Create and initialize a buffer object
-            glBindBuffer(GL_ARRAY_BUFFER, vao);
+        void BindBuffers(GLenum mode = GL_STATIC_DRAW) {
+            glGenBuffers( 1, &vertexBuffer );
+            glGenBuffers(1, &normalBuffer);
 
-            //why 6? I don't know, i thought 1* would be enough, but it is not, while 6 is perfect, why? god knows
-            glBufferData(GL_ARRAY_BUFFER, 6*sizeof(Point3)*v.size(), points.data(), GL_STATIC_DRAW); // why????? 
+            // Create and initialize a buffer object
+            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+            glBufferData(GL_ARRAY_BUFFER, 6*sizeof(Point3)*v.size(), points.data(), mode); // trust me
+
+            glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
+            glBufferData(GL_ARRAY_BUFFER, 6*sizeof(Vector3)*v.size(), normals.data(), mode);
         }
 
         void ComputeNormalsPerFace() {
@@ -102,14 +105,21 @@ class sMesh {
         }
 
         void RenderArray() {
+            glEnableClientState(GL_NORMAL_ARRAY);
+        
+            glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
+            glNormalPointer(GL_FLOAT, 0, BUFFER_OFFSET(0));
+
             glEnableClientState(GL_VERTEX_ARRAY);
-            glBindBuffer(GL_ARRAY_BUFFER, vao);
+            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
             glVertexPointer(3, GL_FLOAT, sizeof(Point3), BUFFER_OFFSET(0));
+
             if (useWireframe)
                 glDrawArrays(GL_LINES, 0, sizeof(Point3)*v.size());
             else   
                 glDrawArrays(GL_TRIANGLES, 0, sizeof(Point3)*v.size());
             glDisableClientState(GL_VERTEX_ARRAY);
+            glDisableClientState(GL_NORMAL_ARRAY);
         }
 
         void RenderWire() {
@@ -395,6 +405,9 @@ class sMesh {
         }
 
 
+
+
+
     private: 
 
         void populateEdges() {
@@ -420,10 +433,11 @@ class sMesh {
             e.shrink_to_fit();
         }
 
-        void populateFlatVertices() {
+        void populateBuffers() {
             for (auto face : f) {
                 for (int i=0; i<3; i++) {
                     points.push_back((face.v)[i]->p);
+                    normals.push_back((face.v)[i]->n);
                     
                 }
             }

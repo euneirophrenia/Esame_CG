@@ -41,7 +41,7 @@ clean:
 	${RM} $(OBJ) $(BIN)
 
 $(BIN): $(OBJ)
-	$(CPP) -std=$(STD) $(LINKOBJ) -o $(BIN) $(FRMPATH) $(LIBS)
+	$(CPP) -std=$(STD) $(FLAG) $(LINKOBJ) -o $(BIN) $(FRMPATH) $(LIBS)
 
 main.o: main.cpp
-	$(CPP) -std=$(STD) -c $(FRMPATH) main.cpp -o main.o
+	$(CPP) -std=$(STD) $(FLAG) -c $(FRMPATH) main.cpp -o main.o

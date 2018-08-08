@@ -15,7 +15,8 @@
 #define CAMERA_TOP_CAR 2
 #define CAMERA_PILOT 3
 #define CAMERA_MOUSE 4
-#define CAMERA_TYPE_MAX 5
+#define CAMERA_FRONT 5
+#define CAMERA_TYPE_MAX 6
 
 float viewAlpha=20, viewBeta=40; // angoli che definiscono la vista
 float eyeDist=5.0; // distanza dell'occhio dall'origine
@@ -194,6 +195,17 @@ void setCamera(){
                 cz = pz - camd*cosf;
                 gluLookAt(ex,ey,ez,cx,cy,cz,0.0,1.0,0.0);
                 break;
+        case CAMERA_FRONT:
+                camd = -2.5;
+                camh = 1.0;
+                ex = px + camd*sinf;
+                ey = py + camh;
+                ez = pz + camd*cosf;
+                cx = px - camd*sinf;
+                cy = py + camh;
+                cz = pz - camd*cosf;
+                gluLookAt(ex,ey,ez,cx,cy,cz, 0.0, 1.0, 0.0);
+                break;
         case CAMERA_MOUSE:
                 glTranslatef(0,0,-eyeDist);
                 glRotatef(viewBeta,  1,0,0);
@@ -307,6 +319,13 @@ void reshapeHandler(int w, int h){
   rendering();
 }
 
+void Log() {
+    printf("\n--------- LOG ----------\n");
+    printf("- FPS          :\t%f\n", fps);
+    bike.Log();
+
+}
+
 //These functions right here, instead, control the UI (and kinda the controller)
 
 void keyboardDownHandler(unsigned char key, int x, int y) {
@@ -317,6 +336,7 @@ void keyboardDownHandler(unsigned char key, int x, int y) {
         if (key=='4') useHeadlight=!useHeadlight;
         if (key=='5') useShadow=!useShadow;
         if (key=='q') exit(0);
+        if (key==32) Log();
 
 }
 
@@ -396,8 +416,8 @@ int main(int argc, char* argv[])
   glutInitWindowSize( scrH, scrW );
 
   glutCreateWindow( "CG2018 Di Vincenzo" );
-  world.BindVAOs(); // setup the buffers so that we don't need to resend all the geometry to the GPU when drawing the world
-  bike.BindVAOs();
+  world.BindBuffers(); // setup the buffers so that we don't need to resend all the geometry to the GPU when drawing the world
+  bike.BindBuffers();
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_LIGHTING);
@@ -416,6 +436,7 @@ int main(int argc, char* argv[])
   if (!LoadTexture(0,(char *)"Resources/logo.jpg")) return -1;
   if (!LoadTexture(1,(char *)"Resources/envmap_flipped.jpg")) return -1;
   if (!LoadTexture(2,(char *)"Resources/sky_ok.jpg")) return -1;
+  if (!LoadTexture(3,(char*) "Resources/camouflage.jpg")) return -1;
 
   glutDisplayFunc(rendering);
 

@@ -37,8 +37,8 @@ class Tile {
             Scale(s.coord[0], s.coord[1], s.coord[2]);
         }
 
-        inline void BindVAO() {
-            model.BindVAO();
+        inline void BindBuffers() {
+            model.BindBuffers();
         }
 
         //todo:: also handle scaling!!
@@ -64,6 +64,7 @@ class Tile {
         }
 
         virtual float height_at(Point3 point) = 0; 
+        virtual Vector3 normal_at(Point3 point) =0;
 };
 
 
@@ -74,6 +75,10 @@ class FlatTile : public Tile {
 
         float height_at(Point3 point) {
             return model.bbmax.Y() * scale.Y();
+        }
+
+        Vector3 normal_at(Point3 point) {
+            return Vector3(0,1,0);
         }
 
 };
@@ -101,5 +106,24 @@ class ExponentialSlope : public Tile {
             // and it turns out that can be written like that
             // when handling also scaling, it might get a bit hard do adjust, but I don't think i will ever need that
         }
+
+        Vector3 normal_at(Point3 point){
+            float sine = -sin(rotation);
+            float cosine = cos(rotation);
+
+            //undo any translation
+            float tile_x = point.X() - center.X();
+            float tile_z = point.Z() - center.Z();
+
+            // undo any rotation between tile and world
+            tile_x = cosine * tile_x + sine * tile_z;  // i don't really need the other coordinate, it is not used in this case
+
+            if (tile_x >=0) 
+                return Vector3(-pow(1.5, -tile_x + 5)*log(1.5), -1, 0);
+
+            return Vector3(pow(1.5, tile_x + 5)*log(1.5), -1, 0);
+        
+        }
+
 };
 
