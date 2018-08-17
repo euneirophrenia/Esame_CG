@@ -114,8 +114,11 @@ class sMesh {
             glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
             glVertexPointer(3, GL_FLOAT, sizeof(Point3), BUFFER_OFFSET(0));
 
-            if (useWireframe)
+            if (useWireframe) {
+                glDisable(GL_TEXTURE_2D);
+                glColor3f(0.5, 0.5, 0.5);
                 glDrawArrays(GL_LINES, 0, sizeof(Point3)*v.size());
+            }
             else   
                 glDrawArrays(GL_TRIANGLES, 0, sizeof(Point3)*v.size());
             glDisableClientState(GL_VERTEX_ARRAY);
@@ -441,6 +444,10 @@ class sMesh {
                     
                 }
             }
+            // for (auto vertex : v) {
+            //         points.push_back(vertex.p);
+            //         normals.push_back(vertex.n);
+            // }
         }
 
 };

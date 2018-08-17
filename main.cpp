@@ -1,5 +1,5 @@
 #include <math.h>
-// #include "Glew/glew.h"
+#include <unistd.h>
 
 #ifdef __APPLE__
   #include <SDL2_image/SDL_image.h>
@@ -25,6 +25,8 @@ bool useWireframe=false;
 bool useEnvmap=true;
 bool useHeadlight=false;
 bool useShadow=true;
+bool showMinimap = false;
+bool showMenu = false;
 int cameraType=0;
 
 int previous_mouse_position[2] = {0, 0};
@@ -62,6 +64,7 @@ bool LoadTexture(int textbind,char *filename){
 GLenum texture_format;
 
   SDL_Surface *s = IMG_Load(filename);
+
   if (!s) return false;
 
   if (s->format->BytesPerPixel == 4){     // contiene canale alpha
@@ -149,7 +152,7 @@ void setCamera(){
 // controllo la posizione della camera a seconda dell'opzione selezionata
         switch (cameraType) {
         case CAMERA_BACK_CAR:
-                camd = 2.5;
+                camd = 2.0;
                 camh = 1.0;
                 ex = px + camd*sinf;
                 ey = py + camh;
@@ -175,7 +178,7 @@ void setCamera(){
                 break;
         case CAMERA_TOP_CAR:
                 camd = 2.5;
-                camh = 1.0;
+                camh = 1.5;
                 ex = px + camd*sinf;
                 ey = py + camh;
                 ez = pz + camd*cosf;
@@ -196,7 +199,7 @@ void setCamera(){
                 gluLookAt(ex,ey,ez,cx,cy,cz,0.0,1.0,0.0);
                 break;
         case CAMERA_FRONT:
-                camd = -2.5;
+                camd = -0.5;
                 camh = 1.0;
                 ex = px + camd*sinf;
                 ey = py + camh;
@@ -224,8 +227,89 @@ printf("%f %f %f\n",viewAlpha,viewBeta,eyeDist);
         }
 }
 
+void setInputState(bool active);
+void rendering(bool);
+
+void DrawMiniMap() {
+  glViewport(scrW*0.5, scrH*0.5, scrW*0.5, scrH*0.5);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  glColor3f(0,1,0);
+  glBegin(GL_QUADS);  //todo texture with the road view and put a mark at bike position
+    glVertex2d(10,0);
+    glVertex2d(10,20);
+    glVertex2d(0,20);
+    glVertex2d(0,0);
+
+  glEnd();
+
+  glViewport(0, 0, scrW, scrH);
+
+}
+
+// Draw text and other infos
+void DrawUI(){
+
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_LIGHTING);
+ 
+  DrawText(0, scrH-20, "FPS " + std::to_string(fps));
+  float v=bike.Velocity();
+  DrawText(20, 20, "Speed: " + std::to_string(int(v*500)) + " km/h");
+
+  if (bike.crashed){
+    DrawText(scrW/2, scrH/2, "C R A S H E D", RED);
+    DrawText(scrW/2 - 5, scrH/2 - 25, "press Q to exit", RED);
+    setInputState(false);
+    
+  }
+  if (showMinimap)
+    DrawMiniMap();
+  
+  if (!showMenu)
+    DrawText(scrW*0.3, scrH-20, "Press 'H' to toggle help screen");
+  else {
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glColor3f(1,1,1);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 8);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glBegin(GL_QUADS);  
+      glTexCoord2f(20,0);
+        glVertex2d(20,0);
+      glTexCoord2f(20,20);
+        glVertex2d(20,20);
+      glTexCoord2f(0,20);
+        glVertex2d(0,20);
+      glTexCoord2f(0,0);
+        glVertex2d(0,0);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+  }
+  
+  // Draw a bar to represent the velocity
+  SetCoordToPixel();
+  glBegin(GL_QUADS);
+    float y = scrH*v * 2;
+    float ramp = v * 2;
+    glColor3f(1-ramp,0,ramp);
+    glVertex2d(10,0);
+    glVertex2d(10,y);
+    glVertex2d(0,y);
+    glVertex2d(0,0);
+  glEnd();
+
+  
+}
+
 /* Esegue il Rendering della scena */
-void rendering(){
+void rendering(bool drawUI=true){
   
   // un frame in piu'!!!
   fpsNow++;
@@ -272,37 +356,19 @@ void rendering(){
 
   static float tmpcol[4] = {1,1,1,  1};
   glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, tmpcol);
-  glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 127);
+  glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50);
   
   glEnable(GL_LIGHTING);
  
   // settiamo matrice di modellazione
   //drawAxis(); // disegna assi frame OGGETTO
   //drawCubeWire();
-  
+
+  bike.Render(); // disegna la moto
   world.draw(); // disegna il mondo
   
-  bike.Render(); // disegna la moto
-	
-  // attendiamo la fine della rasterizzazione di 
-  // tutte le primitive mandate 
-  
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_LIGHTING);
- 
-// disegnamo i fps (frame x sec) come una barra a sinistra.
-// (vuota = 0 fps, piena = 100 fps)
-  printf("\r[DEBUG] FPS %f", fps);
-  SetCoordToPixel();
-  glBegin(GL_QUADS);
-    float y=scrH*fps/100;
-    float ramp=fps/100;
-    glColor3f(1-ramp,0,ramp);
-    glVertex2d(10,0);
-    glVertex2d(10,y);
-    glVertex2d(0,y);
-    glVertex2d(0,0);
-  glEnd();
+	if(drawUI)
+    DrawUI();
   
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_LIGHTING);
@@ -311,6 +377,10 @@ void rendering(){
   glutSwapBuffers();
   glutPostRedisplay();
 
+}
+
+void renderHandle() {
+   rendering(); 
 }
 
 void reshapeHandler(int w, int h){
@@ -330,13 +400,33 @@ void Log() {
 
 void keyboardDownHandler(unsigned char key, int x, int y) {
         bike.controller.EatKey(key, keymap , true);
-        if (key=='1') cameraType=(cameraType+1)%CAMERA_TYPE_MAX;
-        if (key=='2') useWireframe=!useWireframe;
-        if (key=='3') useEnvmap=!useEnvmap;
-        if (key=='4') useHeadlight=!useHeadlight;
-        if (key=='5') useShadow=!useShadow;
-        if (key=='q') exit(0);
-        if (key==32) Log();
+        switch (key){
+          case '1':
+            cameraType=(cameraType+1)%CAMERA_TYPE_MAX;
+            break;
+          case '2':
+            useWireframe=!useWireframe;
+            break;
+          case '3': 
+            useEnvmap=!useEnvmap;
+            break;
+          case '4':  
+            useHeadlight=!useHeadlight;
+            break;
+          case '5':
+             useShadow=!useShadow;
+             break;
+          case 'q': 
+            exit(0);
+          case 32:  
+            Log();
+            break;
+          case 'm': 
+            showMinimap=!showMinimap;
+            break;
+          case 'h':
+            showMenu = !showMenu;
+        }
 
 }
 
@@ -381,7 +471,7 @@ void idleFunction() {
 void motionHandler(int x, int y) {
             viewAlpha+= x - previous_mouse_position[0];
             viewBeta += y - previous_mouse_position[1];
-  //          if (viewBeta<-90) viewBeta=-90;
+            if (viewBeta<-90) viewBeta=-90;
             if (viewBeta<+5) viewBeta=+5; //per non andare sotto la macchina
             if (viewBeta>+90) viewBeta=+90;
             previous_mouse_position[0] = x;
@@ -407,6 +497,16 @@ void mouseHandler(int button, int state, int x, int y) {
     eyeDist=eyeDist/0.9;
 }
 
+void exitFunc(unsigned char key, int x, int y) {
+  if (key=='q') exit(0);
+}
+
+void setInputState(bool active) {
+  glutKeyboardUpFunc(active? keyboardUpHandler : exitFunc);
+  glutKeyboardFunc(active? keyboardDownHandler : NULL);
+  glutMouseFunc(active? mouseHandler : NULL);
+  glutIdleFunc(active? idleFunction : NULL);
+}
 
 int main(int argc, char* argv[])
 {
@@ -416,8 +516,8 @@ int main(int argc, char* argv[])
   glutInitWindowSize( scrH, scrW );
 
   glutCreateWindow( "CG2018 Di Vincenzo" );
-  world.BindBuffers(); // setup the buffers so that we don't need to resend all the geometry to the GPU when drawing the world
-  bike.BindBuffers();
+  world.BindBuffers(); // setup the buffers so that we don't need to resend all the geometry to the GPU when drawing the world 
+  bike.BindBuffers(); // same, but the efficient way is used only on some meshes, since others have some problems
 
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_LIGHTING);
@@ -433,19 +533,24 @@ int main(int argc, char* argv[])
                                     // rasterizzazione poligoni
   glPolygonOffset(1,1);             // indietro di 1
   
-  if (!LoadTexture(0,(char *)"Resources/logo.jpg")) return -1;
+  if (!LoadTexture(0,(char *)"Resources/wheel.jpg")) return -1;
   if (!LoadTexture(1,(char *)"Resources/envmap_flipped.jpg")) return -1;
-  if (!LoadTexture(2,(char *)"Resources/sky_ok.jpg")) return -1;
+  if (!LoadTexture(2,(char *)"Resources/sky_ok.png")) return -1;
   if (!LoadTexture(3,(char*) "Resources/camouflage.jpg")) return -1;
+  if (!LoadTexture(4,(char*) "Resources/me.png")) return -1;
+  if (!LoadTexture(5,(char*) "Resources/wood.jpg")) return -1;
+  if (!LoadTexture(6,(char*) "Resources/asphalt2.jpg")) return -1;
+  if (!LoadTexture(7,(char*) "Resources/text.png")) return -1;
+  if (!LoadTexture(8,(char*) "Resources/menu.png")) return -1;
 
-  glutDisplayFunc(rendering);
+  glutDisplayFunc(renderHandle);
 
   glutKeyboardUpFunc(keyboardUpHandler);
   glutKeyboardFunc(keyboardDownHandler);
   glutMouseFunc(mouseHandler);
   glutIdleFunc(idleFunction);
-  glutReshapeFunc(reshapeHandler);
   glutMotionFunc(NULL);
+  glutReshapeFunc(reshapeHandler);
 
   glutMainLoop();
  

@@ -69,21 +69,31 @@ class World {
             */
             
             // disegna KxK quads
+            if (!useWireframe) {
+                SetupEnvmapTexture(5, GL_OBJECT_LINEAR);
+                glEnable(GL_LIGHTING);
+                //glColor3f(0.7, 0.7, 0.7);
+            }
+
             glBegin(GL_QUADS);
                 glColor3f(0.6, 0.6, 0.6); // colore uguale x tutti i quads
                 glNormal3f(0,1,0);       // normale verticale uguale x tutti
+                
                 for (int x=0; x<K; x++) 
-                for (int z=0; z<K; z++) {
-                float x0=-S + 2*(x+0)*S/K;
-                float x1=-S + 2*(x+1)*S/K;
-                float z0=-S + 2*(z+0)*S/K;
-                float z1=-S + 2*(z+1)*S/K;
-                glVertex3d(x0, H, z0);
-                glVertex3d(x1, H, z0);
-                glVertex3d(x1, H, z1);
-                glVertex3d(x0, H, z1);
-                }
+                    for (int z=0; z<K; z++) {
+                        float x0=-S + 2*(x+0)*S/K;
+                        float x1=-S + 2*(x+1)*S/K;
+                        float z0=-S + 2*(z+0)*S/K;
+                        float z1=-S + 2*(z+1)*S/K;
+                        glVertex3d(x0, H, z0);
+                        glVertex3d(x1, H, z0);
+                        glVertex3d(x1, H, z1);
+                        glVertex3d(x0, H, z1);
+                    }
             glEnd();
+            glDisable(GL_TEXTURE_2D);
+            glDisable(GL_TEXTURE_GEN_S);
+            glDisable(GL_TEXTURE_GEN_T);
         }
 
         void drawSky() {
@@ -124,12 +134,17 @@ class World {
 
         World() {
             //create all the tiles needed
-            ExponentialSlope* obstacle = new ExponentialSlope( (char*) "./WIP/writings.obj");
-            ExponentialSlope* obstacle2 = new ExponentialSlope( (char*) "./WIP/writings.obj");
+            ExponentialSlope* obstacle = new ExponentialSlope( (char*) "./Resources/exptile.obj");
+            ExponentialSlope* obstacle2 = new ExponentialSlope( (char*) "./Resources/exptile.obj");
             obstacle2->Translate(19, 0, 0);
+
+            PitTile* pit = new PitTile( (char*) "./Resources/pittile.obj");
+            pit->Translate(35, 0.4, 0);
+            pit->Scale(3, 1, 6);
 
             tiles.push_back(obstacle);
             tiles.push_back(obstacle2);
+            tiles.push_back(pit);
 
             // for (auto tile : tiles) {
             //     for (float f : tile->model.Flat_Vertices()) {

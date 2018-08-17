@@ -16,10 +16,42 @@ class Vehicle {
         /// invocato due volte: per la car e la sua ombra
         virtual void RenderAllParts(bool usecolor) = 0;
         virtual void Init() = 0;
+        float current_ground_level =0;
+
+        void DrawHeadlight(float x, float y, float z, int lightN, bool useHeadlight) {
+            int usedLight=GL_LIGHT1 + lightN;
+            
+            if(useHeadlight)
+            {
+                glEnable(usedLight);
+                
+                float col0[4]= {0.8,0.8,0.0,  1};
+                glLightfv(usedLight, GL_DIFFUSE, col0);
+                
+                float col1[4]= {0.5,0.5,0.0,  1};
+                glLightfv(usedLight, GL_AMBIENT, col1);
+                
+                float tmpPos[4] = {x,y,z,  1}; // ultima comp=1 => luce posizionale
+                glLightfv(usedLight, GL_POSITION, tmpPos );
+                
+                float tmpDir[4] = {0,0,-1,  0}; // ultima comp=1 => luce posizionale
+                glLightfv(usedLight, GL_SPOT_DIRECTION, tmpDir );
+                
+                glLightf (usedLight, GL_SPOT_CUTOFF, 30);
+                glLightf (usedLight, GL_SPOT_EXPONENT, 5);
+                
+                glLightf(usedLight,GL_CONSTANT_ATTENUATION, 0);
+                glLightf(usedLight,GL_LINEAR_ATTENUATION, 0.6);
+            }
+            else
+                glDisable(usedLight);
+        }
 
     public:
         // Metodi
         Controller controller;
+
+        
 
         inline virtual void Render() {
             // sono nello spazio mondo
@@ -30,15 +62,18 @@ class Vehicle {
 
             // sono nello spazio MACCHINA
 
+            DrawHeadlight(-0.3, 0, -1, 0, useHeadlight); // accendi faro sinistro
+            DrawHeadlight(+0.3, 0, -1, 1, useHeadlight); // accendi faro destro
+
             RenderAllParts(true); 
             
             // ombra!
             if(useShadow)
             {
-                glColor3f(0.4,0.4,0.4); // colore fisso
-                glTranslatef(0,0.01,0); // alzo l'ombra di un epsilon per evitare z-fighting con il pavimento
+                glColor3f(0.1, 0.1, 0.1); // colore fisso
+                glTranslatef(0, -py+current_ground_level + 0.01,0); // alzo l'ombra di un epsilon per evitare z-fighting con il pavimento
                 glScalef(1.01,0,1.01);  // appiattisco sulla Y, ingrandisco dell'1% sulla Z e sulla X 
-                glDisable(GL_LIGHTING); // niente lighing per l'ombra
+                glDisable(GL_LIGHTING); // niente lighting per l'ombra
                 RenderAllParts(false);  // disegno la macchina appiattita
 
                 glEnable(GL_LIGHTING);
@@ -46,6 +81,12 @@ class Vehicle {
             glPopMatrix(); 
             
         }
+
+        float Velocity() {
+            return Vector3(vx, vy, vz).modulo();
+        }
+
+        
 
         virtual void DoStep() = 0; // computa un passo del motore fisico
         
@@ -57,7 +98,7 @@ class Vehicle {
         float accMax, attritoX, attritoY, attritoZ, grip;
         float raggioRuotaA, raggioRuotaP;
         float mozzoA, mozzoP, sterzo;
-        float step = 0.1;
+        float step = 0.07;
 };
 
 
@@ -69,13 +110,18 @@ class MotorBike : public Vehicle {
         float inclination;
         World* world_reference;
         float length;
+        float MAX_STEP;
 
     protected:
         sMesh* carlinga = new sMesh((char*)"./Resources/Bike/carlinga.obj");
         sMesh* back_wheel = new sMesh((char*) "./Resources/Bike/backwheel.obj");
         sMesh* front_wheel = new sMesh((char*) "./Resources/Bike/frontwheel.obj");
+        sMesh* plate = new sMesh((char*) "./Resources/Bike/plate.obj");
 
-        sMesh* pilot = new sMesh((char*) "./Resources/Bike/pilot.obj");
+        sMesh* pilot = new sMesh((char*) "./Resources/Bike/body2.obj");
+        sMesh* face  = new sMesh((char*) "./Resources/Bike/head.obj");
+        sMesh* helmet = new sMesh((char*) "./Resources/Bike/helmet.obj");
+        
 
         void RenderAllParts(bool usecolor) {
             // disegna la carliga con una mesh
@@ -85,46 +131,81 @@ class MotorBike : public Vehicle {
 
             glRotatef(inclination, normaldirection.X(), normaldirection.Y(), normaldirection.Z());
 
-            glRotatef( sterzo * -abs(vzm)  / 0.12 , 1, 0, 0); // inclinare la moto durante le curve
+            glRotatef( sterzo * -abs(vzm)  / 0.12 , 1, 0, 0); // tilt when stirring
         
             // ------- Wheels ----------
             glPushMatrix();
-                glTranslate( front_wheel->Center());  //rotazione ruota
+                glTranslate( front_wheel->Center());  // wheel rotation
                 glRotatef(mozzoA, 0, 0, 1); 
                 glTranslate( -front_wheel->Center());
-                if (usecolor) glColor3f(.6,.6,.6);
-                if (usecolor) SetupTexture(0, front_wheel->bbmin, front_wheel->bbmax);
-                if (usecolor) glColor3f(0.9,0.9,0.9);
+                if (usecolor){
+                    glColor3f(.6,.6,.6);
+                    SetupTexture(6, front_wheel->bbmin, front_wheel->bbmax);
+                    glColor3f(0.9,0.9,0.9);
+                }
                 front_wheel->RenderNxF();
                 glDisable(GL_TEXTURE_2D);
             glPopMatrix();
 
             glPushMatrix();
-                glTranslate( back_wheel->Center());  //rotazione ruota
+                glTranslate( back_wheel->Center());  // wheel rotation
                 glRotatef(mozzoP, 0, 0, 1); 
                 glTranslate( -back_wheel->Center());
 
-                if (usecolor) glColor3f(.6,.6,.6);
-                if (usecolor) SetupTexture(0, back_wheel->bbmin, back_wheel->bbmax);
-                if (usecolor) glColor3f(0.9,0.9,0.9);
-                back_wheel->RenderNxF();
+                if (usecolor) {
+                    glColor3f(.6,.6,.6);
+                    SetupTexture(6, back_wheel->bbmin, back_wheel->bbmax);
+                    glColor3f(0.9,0.9,0.9);
+                }
+                back_wheel->RenderNxV();
                 glDisable(GL_TEXTURE_2D);
             glPopMatrix();
 
-            if (usecolor) glEnable(GL_LIGHTING);
+            if (usecolor) {
+                glEnable(GL_LIGHTING);
+                glColor3f(0.5, 0.6, 0.5);
+            }
 
-            carlinga->RenderNxV(); // rendering delle mesh carlinga usando normali per vertice
+            carlinga->RenderArray(); // rendering delle mesh carlinga usando normali per vertice
+            if (usecolor) {
+                glColor3f(1,1,1);
+                SetupTexture(7, plate->bbmin, plate->bbmax);
+            }
+            plate->RenderNxF();
+            glDisable(GL_TEXTURE_2D);
+            glDisable(GL_TEXTURE_GEN_S);
+            glDisable(GL_TEXTURE_GEN_T);
 
-            if (usecolor)
 
-            if (usecolor) SetupTexture(3, pilot->bbmin, pilot->bbmax);
+            if (usecolor) {
+                //glColor3f(1,1,1);
+                //SetupTexture(3, pilot->bbmin, pilot->bbmax);
+                glColor3f(31.0/255, 112.0/255, 73.0/255);
+            }
             pilot->RenderArray(); // to be more efficient
             glDisable(GL_TEXTURE_2D);
+            glDisable(GL_TEXTURE_GEN_S);
+            glDisable(GL_TEXTURE_GEN_T);
+
+            if (usecolor) {
+                glColor3f(1,1,1);
+                SetupTexture(4, face->bbmin, face->bbmax, GL_OBJECT_LINEAR);
+            }
+            face->RenderArray();
+            glDisable(GL_TEXTURE_2D);
+            glDisable(GL_TEXTURE_GEN_S);
+            glDisable(GL_TEXTURE_GEN_T);
+
+            if(usecolor) {
+                glColor3f(31.0/255, 112.0/255, 73.0/255);
+            }
+            helmet->RenderArray();
 
             glPopMatrix();
         }
 
     public:
+        bool crashed = false;
 
         MotorBike(World* w) { 
             Init(); 
@@ -133,10 +214,13 @@ class MotorBike : public Vehicle {
 
         void Init() {
             // inizializzo lo stato della macchina
-            px =  pz = facing = 0; // posizione e orientamento
+            px = facing = 0; // posizione e orientamento
+            pz = 10;
             py = 0.0;
             
             vx=vy=vz=0;      // velocita' attuale
+             //to prevent some NaN #hacks
+            vz = 0.000001;
 
             mozzoA = mozzoP = sterzo =0;
 
@@ -164,6 +248,7 @@ class MotorBike : public Vehicle {
             grip = 0.45; // quanto il facing macchina si adegua velocemente allo sterzo
 
             length = 4*(carlinga->bbmax.X() - carlinga->bbmin.X());
+            MAX_STEP = length / 2 ;
 
         }
 
@@ -172,6 +257,9 @@ class MotorBike : public Vehicle {
             front_wheel->BindBuffers(GL_DYNAMIC_DRAW);
             carlinga->BindBuffers(GL_DYNAMIC_DRAW);
             pilot->BindBuffers(GL_STATIC_DRAW);
+            face->BindBuffers(GL_STATIC_DRAW);
+            plate->BindBuffers(GL_STATIC_DRAW);
+            helmet->BindBuffers(GL_STATIC_DRAW);
         }
 
         inline void DoStep() {
@@ -218,22 +306,27 @@ class MotorBike : public Vehicle {
             pz+=vz;
 
             float h = world_reference->height_at(px, pz);
-            if (py<=h) {
+            current_ground_level = h;
+            if (py<=h && h-py <= MAX_STEP) { //se si può salire lo scalino
                 py=h; 
+            }
+            if (h-py > MAX_STEP){ //crash su muro
+                vx=0;
+                vy=0;
+                vz=0;
+                crashed = true;
             }
             if (py > h + step) {
                 py -= step;
             }
 
             auto tmp = world_reference->normal_at(Point3(px, py, pz));
-            auto velocity = Vector3(vx, vy, vz);
+            auto velocity = Vector3(vx, vy, vz).Normalize();
             auto dotp = tmp*velocity; 
-            dotp = dotp / (tmp.modulo() * velocity.modulo());
+            dotp = dotp / tmp.modulo();
             inclination = dotp.coord[0] + dotp.coord[1] + dotp.coord[2];
             inclination = 90 - (180 * acos(inclination) / M_PI);
             normaldirection = Vector3(0, 0, vzm >=0 ? -1 : 1);
-
-
         } 
 
         void Log() {
