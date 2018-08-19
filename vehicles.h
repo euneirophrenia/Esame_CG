@@ -8,6 +8,7 @@
 extern bool useHeadlight;
 extern bool useShadow;
 extern bool useEnvmap;
+extern int cameraType;
 
 class Vehicle {
 
@@ -118,9 +119,9 @@ class MotorBike : public Vehicle {
         sMesh* front_wheel = new sMesh((char*) "./Resources/Bike/frontwheel.obj");
         sMesh* plate = new sMesh((char*) "./Resources/Bike/plate.obj");
 
-        sMesh* pilot = new sMesh((char*) "./Resources/Bike/body2.obj");
-        sMesh* face  = new sMesh((char*) "./Resources/Bike/head.obj");
-        sMesh* helmet = new sMesh((char*) "./Resources/Bike/helmet.obj");
+        sMesh* pilot = new sMesh((char*) "./Resources/Bike/body3.obj");
+        sMesh* face  = new sMesh((char*) "./Resources/Bike/head2.obj");
+        sMesh* helmet = new sMesh((char*) "./Resources/Bike/helmet2.obj");
         
 
         void RenderAllParts(bool usecolor) {
@@ -189,7 +190,10 @@ class MotorBike : public Vehicle {
 
             if (usecolor) {
                 glColor3f(1,1,1);
-                SetupTexture(4, face->bbmin, face->bbmax, GL_OBJECT_LINEAR);
+                if (cameraType == CAMERA_FRONT || cameraType == CAMERA_MOUSE)
+                    SetupTexture(4, face->bbmin, face->bbmax, GL_OBJECT_LINEAR);
+                else 
+                    glColor3f(38/255.0f, 25/255.0f, 16/255.0f);
             }
             face->RenderArray();
             glDisable(GL_TEXTURE_2D);
@@ -197,7 +201,7 @@ class MotorBike : public Vehicle {
             glDisable(GL_TEXTURE_GEN_T);
 
             if(usecolor) {
-                glColor3f(31.0/255, 112.0/255, 73.0/255);
+                glColor3f(31.0f/255, 112.0f/255, 73.0f/255);
             }
             helmet->RenderArray();
 
@@ -318,15 +322,20 @@ class MotorBike : public Vehicle {
             }
             if (py > h + step) {
                 py -= step;
+                inclination *= 0.99; //essenzialmente la velocità di ritorno dello sterzo.
+            }
+            else {
+                auto tmp = world_reference->normal_at(Point3(px, py, pz));
+                auto velocity = Vector3(vx, vy, vz).Normalize();
+                auto dotp = tmp*velocity; 
+                dotp = dotp / tmp.modulo();
+                inclination = dotp.coord[0] + dotp.coord[1] + dotp.coord[2] + 0.00000000001;
+                inclination = 90 - (180 * acos(inclination) / M_PI);
+                normaldirection = Vector3(0, 0, vzm >=0 ? -1 : 1);
             }
 
-            auto tmp = world_reference->normal_at(Point3(px, py, pz));
-            auto velocity = Vector3(vx, vy, vz).Normalize();
-            auto dotp = tmp*velocity; 
-            dotp = dotp / tmp.modulo();
-            inclination = dotp.coord[0] + dotp.coord[1] + dotp.coord[2];
-            inclination = 90 - (180 * acos(inclination) / M_PI);
-            normaldirection = Vector3(0, 0, vzm >=0 ? -1 : 1);
+            if (abs(px) > 98 || abs(pz) > 98)
+                crashed=true;
         } 
 
         void Log() {

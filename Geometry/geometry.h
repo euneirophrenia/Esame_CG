@@ -9,9 +9,9 @@ class Point3 {
   
         float coord[3]; // l'UNICO campo: le coordinate x, y, z
         
-        float X() const { return coord[0]; }
-        float Y() const { return coord[1]; }
-        float Z() const { return coord[2]; }
+        inline float X() const { return coord[0]; }
+        inline float Y() const { return coord[1]; }
+        inline float Z() const { return coord[2]; }
         
         // costruttore 1
         Point3( float x, float y, float z ){

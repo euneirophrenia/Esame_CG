@@ -10,31 +10,27 @@
 #include "vehicles.h"
 #include "world.h"
 
-#define CAMERA_BACK_CAR 0
-#define CAMERA_TOP_FIXED 1
-#define CAMERA_TOP_CAR 2
-#define CAMERA_PILOT 3
-#define CAMERA_MOUSE 4
-#define CAMERA_FRONT 5
-#define CAMERA_TYPE_MAX 6
-
 float viewAlpha=20, viewBeta=40; // angoli che definiscono la vista
 float eyeDist=5.0; // distanza dell'occhio dall'origine
 int scrH=750, scrW=750; // altezza e larghezza viewport (in pixels)
 bool useWireframe=false;
-bool useEnvmap=true;
+bool useTransparency=false;
 bool useHeadlight=false;
 bool useShadow=true;
 bool showMinimap = false;
 bool showMenu = false;
 int cameraType=0;
 
+std::string floor_texture = "Resources/wood.jpg";
+
 int previous_mouse_position[2] = {0, 0};
 
 static int keymap[Controller::NKEYS] = {'a', 'd', 'w', 's'};
 
 World world;
-MotorBike bike(&world); // la nostra macchina
+MotorBike bike(&world); // la nostra moto
+
+Point3 player_position; // #hacks
 
 
 int nstep=0; // numero di passi di FISICA fatti fin'ora
@@ -58,51 +54,6 @@ void  SetCoordToPixel(){
   glLoadIdentity();
   glTranslatef(-1,-1,0);
   glScalef(2.0/scrW, 2.0/scrH, 1);
-}
-
-bool LoadTexture(int textbind,char *filename){
-GLenum texture_format;
-
-  SDL_Surface *s = IMG_Load(filename);
-
-  if (!s) return false;
-
-  if (s->format->BytesPerPixel == 4){     // contiene canale alpha
-    if (s->format->Rmask == 0x000000ff){
-      texture_format = GL_RGBA;
-    }
-    else{
-      texture_format = GL_BGRA;
-    }
-  } else if (s->format->BytesPerPixel == 3){     // non contiene canale alpha
-     if (s->format->Rmask == 0x000000ff)
-       texture_format = GL_RGB;
-     else
-       texture_format = GL_BGR;
-    } else {
-        printf("[ERROR] the image is not truecolor\n");
-        exit(1);
-      }
-
-  glBindTexture(GL_TEXTURE_2D, textbind);
-  gluBuild2DMipmaps(
-  //glGenerateMipmap(
-      GL_TEXTURE_2D, 
-      3,
-      s->w, s->h, 
-      texture_format,
-      GL_UNSIGNED_BYTE,
-      s->pixels
-  );
-  glTexParameteri(
-  GL_TEXTURE_2D, 
-  GL_TEXTURE_MAG_FILTER,
-  GL_LINEAR ); 
-  glTexParameteri(
-  GL_TEXTURE_2D, 
-  GL_TEXTURE_MIN_FILTER,
-  GL_LINEAR_MIPMAP_LINEAR ); 
-  return true;
 }
 
 // disegna gli assi nel sist. di riferimento
@@ -254,6 +205,7 @@ void DrawUI(){
 
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_LIGHTING);
+  glDisable(GL_CULL_FACE);
  
   DrawText(0, scrH-20, "FPS " + std::to_string(fps));
   float v=bike.Velocity();
@@ -305,6 +257,9 @@ void DrawUI(){
     glVertex2d(0,0);
   glEnd();
 
+  glEnable(GL_CULL_FACE);
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_LIGHTING);
   
 }
 
@@ -408,7 +363,7 @@ void keyboardDownHandler(unsigned char key, int x, int y) {
             useWireframe=!useWireframe;
             break;
           case '3': 
-            useEnvmap=!useEnvmap;
+            useTransparency=!useTransparency;
             break;
           case '4':  
             useHeadlight=!useHeadlight;
@@ -434,6 +389,14 @@ void keyboardUpHandler(unsigned char key, int x, int y) {
      bike.controller.EatKey(key, keymap , false);
 }
 
+void joyHandler(unsigned int buttonMask, int x, int y, int z) {
+  bike.controller.Joy(Controller::ACC, x>0);
+  bike.controller.Joy(Controller::LEFT, y<0);
+  bike.controller.Joy(Controller::RIGHT, y>0);
+  bike.controller.Joy(Controller::DEC, x<0);
+  
+}
+
 void idleFunction() {
       // nessun evento: siamo IDLE
       
@@ -452,6 +415,9 @@ void idleFunction() {
       // al tempo reale...
       while (nstep*PHYS_SAMPLING_STEP < timeNow ) {
         bike.DoStep();
+        player_position.coord[0] = bike.px;
+        player_position.coord[1] = bike.py;
+        player_position.coord[2] = bike.pz;
         nstep++;
         doneSomething = true;
         timeNow = glutGet(GLUT_ELAPSED_TIME);
@@ -493,8 +459,10 @@ void mouseHandler(int button, int state, int x, int y) {
          eyeDist=eyeDist*0.9;
          if (eyeDist<1) eyeDist = 1;
   }
-  if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
+  if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN){
     eyeDist=eyeDist/0.9;
+    if (eyeDist > 90) eyeDist = 90;
+  }
 }
 
 void exitFunc(unsigned char key, int x, int y) {
@@ -523,7 +491,7 @@ int main(int argc, char* argv[])
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
   glEnable(GL_NORMALIZE); // opengl, per favore, rinormalizza le normali prima di usarle
-  //glEnable(GL_CULL_FACE);
+  glEnable(GL_CULL_FACE);
   glFrontFace(GL_CW); // consideriamo Front Facing le facce ClockWise
 
   glEnable(GL_COLOR_MATERIAL);
@@ -532,16 +500,23 @@ int main(int argc, char* argv[])
                                     // frammenti generati dalla
                                     // rasterizzazione poligoni
   glPolygonOffset(1,1);             // indietro di 1
+
+  TextureProvider* texProvider = TextureProvider::getInstance();
   
-  if (!LoadTexture(0,(char *)"Resources/wheel.jpg")) return -1;
-  if (!LoadTexture(1,(char *)"Resources/envmap_flipped.jpg")) return -1;
-  if (!LoadTexture(2,(char *)"Resources/sky_ok.png")) return -1;
-  if (!LoadTexture(3,(char*) "Resources/camouflage.jpg")) return -1;
-  if (!LoadTexture(4,(char*) "Resources/me.png")) return -1;
-  if (!LoadTexture(5,(char*) "Resources/wood.jpg")) return -1;
-  if (!LoadTexture(6,(char*) "Resources/asphalt2.jpg")) return -1;
-  if (!LoadTexture(7,(char*) "Resources/text.png")) return -1;
-  if (!LoadTexture(8,(char*) "Resources/menu.png")) return -1;
+  texProvider->LoadTexture("Resources/wheel.jpg");
+  texProvider->LoadTexture("Resources/OLD/envmap_flipped.jpg");
+  texProvider->LoadTexture("Resources/sky_ok.png");
+  texProvider->LoadTexture("Resources/camouflage.jpg");
+  texProvider->LoadTexture("Resources/me.png");
+  texProvider->LoadTexture("Resources/wood.jpg");
+  texProvider->LoadTexture("Resources/asphalt2.jpg");
+  texProvider->LoadTexture("Resources/text.png");
+  texProvider->LoadTexture("Resources/menu.png");
+  texProvider->LoadTexture("Resources/dice.jpg");
+  texProvider->LoadTexture("Resources/universe.jpg");
+  texProvider->LoadTexture("Resources/moquette.jpg");
+  texProvider->LoadTexture("Resources/wall1.jpg");
+  texProvider->LoadTexture("Resources/wall2.jpg");
 
   glutDisplayFunc(renderHandle);
 
@@ -550,6 +525,7 @@ int main(int argc, char* argv[])
   glutMouseFunc(mouseHandler);
   glutIdleFunc(idleFunction);
   glutMotionFunc(NULL);
+  glutJoystickFunc(joyHandler, 1);
   glutReshapeFunc(reshapeHandler);
 
   glutMainLoop();

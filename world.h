@@ -6,12 +6,15 @@
 #include "Geometry/sMesh.h"
 #include "tiles.h"
 
+
 // var globale di tipo mesh
 sMesh pista( (char*) "./Resources/pista.obj");
 
 extern bool useEnvmap; // var globale esterna: per usare l'evnrionment mapping
 extern bool useHeadlight; // var globale esterna: per usare i fari
 extern bool useShadow; // var globale esterna: per generare l'ombra
+extern std::string floor_texture;
+const std::vector<std::string> wall_textures = {"Resources/wall1.jpg", "Resources/wall2.jpg", "Resources/wall2.jpg", "Resources/wall2.jpg", "Resources/wall2.jpg", "Resources/wall2.jpg"};
 
 class World {
 
@@ -53,7 +56,7 @@ class World {
 
             const float S=100; // size
             const float H=0;   // altezza
-            const int K=150; //disegna K x K quads
+            const int K=100; //disegna K x K quads
             
             /*
             //vecchio codice ora commentato
@@ -70,13 +73,14 @@ class World {
             
             // disegna KxK quads
             if (!useWireframe) {
-                SetupEnvmapTexture(5, GL_OBJECT_LINEAR);
+                SetupEnvmapTexture(5, GL_OBJECT_LINEAR); //use floor_texture
                 glEnable(GL_LIGHTING);
                 //glColor3f(0.7, 0.7, 0.7);
+
             }
 
             glBegin(GL_QUADS);
-                glColor3f(0.6, 0.6, 0.6); // colore uguale x tutti i quads
+                glColor3f(1, 1, 1); // colore uguale x tutti i quads
                 glNormal3f(0,1,0);       // normale verticale uguale x tutti
                 
                 for (int x=0; x<K; x++) 
@@ -104,29 +108,26 @@ class World {
                 glColor3f(0,0,0);
                 glDisable(GL_LIGHTING);
                 glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-                drawSphere(100.0, 20, 20);
-                glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+                //drawSphere(100.0, 20, 20);
+                glColor3f(1,1,1);
+                glPushMatrix();
+                    glTranslatef(0, H * 0.99, 0);
+                    glScalef(H,H,H);
+                    drawCubeWire();
+                    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+                glPopMatrix();
                 glColor3f(1,1,1);
                 glEnable(GL_LIGHTING);
-            }
-            else
-            {
-                    glBindTexture(GL_TEXTURE_2D,2);
-                    glEnable(GL_TEXTURE_2D);
-                    glEnable(GL_TEXTURE_GEN_S);
-                    glEnable(GL_TEXTURE_GEN_T);
-                    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE , GL_SPHERE_MAP); // Env map
-                    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE , GL_SPHERE_MAP);
-                    glColor3f(1,1,1);
-                    glDisable(GL_LIGHTING);
-
-                //   drawCubeFill();
-                    drawSphere(100.0, 20, 20);
-
-                    glDisable(GL_TEXTURE_GEN_S);
-                    glDisable(GL_TEXTURE_GEN_T);
-                    glDisable(GL_TEXTURE_2D);
-                    glEnable(GL_LIGHTING);
+            } 
+            else {
+                glDisable(GL_LIGHTING);
+                //glEnable(GL_LIGHTING);
+                glColor3f(1,1,1);
+                glPushMatrix();
+                    glTranslatef(0, H * 0.99, 0);
+                    glScalef(H,H,H);
+                    DrawCube(wall_textures);
+                glPopMatrix();
             }
         }
 
@@ -138,13 +139,19 @@ class World {
             ExponentialSlope* obstacle2 = new ExponentialSlope( (char*) "./Resources/exptile.obj");
             obstacle2->Translate(19, 0, 0);
 
-            PitTile* pit = new PitTile( (char*) "./Resources/pittile.obj");
-            pit->Translate(35, 0.4, 0);
-            pit->Scale(3, 1, 6);
+            SphereTile* sphere = new SphereTile((char*) "./Resources/sphere.obj");
+            sphere->Scale(2, 2, 2);
+            sphere->Translate(-19, 2, 4);
+
+            CubeTile* cube = new CubeTile((char*) "./Resources/cube.obj");
+            cube->Rotate(45);
+            cube->Scale(1.5,1.5,1.5);
+            cube->Translate(30, 1.5, 20);
 
             tiles.push_back(obstacle);
             tiles.push_back(obstacle2);
-            tiles.push_back(pit);
+            tiles.push_back(cube);
+            tiles.push_back(sphere);
 
             // for (auto tile : tiles) {
             //     for (float f : tile->model.Flat_Vertices()) {
@@ -163,11 +170,13 @@ class World {
             // pista.RenderNxF();
             // glPopMatrix();
             
-            for (auto tile: tiles)
-                tile->Draw();
+           
+            drawSky();   
+            drawFloor();   
 
-            drawFloor();
-            drawSky();
+            for (auto tile: tiles)
+                tile->Draw();      
+            
         }
 
         void BindBuffers() {

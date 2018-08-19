@@ -18,6 +18,14 @@
 #  define M_PI  3.14159265358979323846
 #endif
 
+#define CAMERA_BACK_CAR 0
+#define CAMERA_TOP_FIXED 1
+#define CAMERA_TOP_CAR 2
+#define CAMERA_PILOT 3
+#define CAMERA_MOUSE 4
+#define CAMERA_FRONT 5
+#define CAMERA_TYPE_MAX 6
+
 //----------------------------------------------------------------------------
 //
 // --- Include OpenGL header files and helpers ---

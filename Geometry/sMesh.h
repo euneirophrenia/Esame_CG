@@ -6,14 +6,13 @@
 #include "../common.h"
 #include "geometry.h"
 
-#include <algorithm>
-
 /*
-    My own implementation of the Mesh class provided by the teacher. 
+    My own improvement to the Mesh class provided by the teacher. 
     It "should" be more efficient
 */
 
 extern bool useWireframe;
+extern bool useTransparency;
 
 class sMesh {
 
@@ -113,14 +112,19 @@ class sMesh {
             glEnableClientState(GL_VERTEX_ARRAY);
             glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
             glVertexPointer(3, GL_FLOAT, sizeof(Point3), BUFFER_OFFSET(0));
-
+           
             if (useWireframe) {
                 glDisable(GL_TEXTURE_2D);
                 glColor3f(0.5, 0.5, 0.5);
-                glDrawArrays(GL_LINES, 0, sizeof(Point3)*v.size());
+                // glDrawArrays(GL_LINES, 0, sizeof(Point3)*v.size());
+                // glColor3f(0.8,0.8,0.8);
+                glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+                //glDrawArrays(GL_TRIANGLES, 0, sizeof(Point3)*v.size());
+                //glColor3f(0.8, 0.8, 0.8);
             }
             else   
-                glDrawArrays(GL_TRIANGLES, 0, sizeof(Point3)*v.size());
+                glPolygonMode( GL_FRONT_AND_BACK, GL_FILL);
+            glDrawArrays(GL_TRIANGLES, 0, sizeof(Point3)*v.size());
             glDisableClientState(GL_VERTEX_ARRAY);
             glDisableClientState(GL_NORMAL_ARRAY);
         }
