@@ -9,6 +9,7 @@
 
 #include "vehicles.h"
 #include "world.h"
+#include <time.h>
 
 float viewAlpha=20, viewBeta=40; // angoli che definiscono la vista
 float eyeDist=5.0; // distanza dell'occhio dall'origine
@@ -206,6 +207,7 @@ void DrawUI(){
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_LIGHTING);
   glDisable(GL_CULL_FACE);
+  glPolygonMode( GL_FRONT_AND_BACK, GL_FILL);
  
   DrawText(0, scrH-20, "FPS " + std::to_string(fps));
   float v=bike.Velocity();
@@ -296,7 +298,7 @@ void rendering(bool drawUI=true){
   //drawAxis(); // disegna assi frame VISTA
   
   // setto la posizione luce
-  float tmpv[4] = {0,1,2,  0}; // ultima comp=0 => luce direzionale
+  static float tmpv[4] = {0, 1, 2,  0}; // ultima comp=0 => luce direzionale
   glLightfv(GL_LIGHT0, GL_POSITION, tmpv );
 
   
@@ -309,9 +311,10 @@ void rendering(bool drawUI=true){
   
   //drawAxis(); // disegna assi frame MONDO
 
-  static float tmpcol[4] = {1,1,1,  1};
+  static float tmpcol[4] = {0.5, 0.5, 0.5,  1};
   glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, tmpcol);
   glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50);
+  glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, FOUR_1);
   
   glEnable(GL_LIGHTING);
  
@@ -329,6 +332,7 @@ void rendering(bool drawUI=true){
   glEnable(GL_LIGHTING);
   
   //glFinish(); //this one makes everything wait for every call to finish
+  glFlush();
   glutSwapBuffers();
   glutPostRedisplay();
 
@@ -484,6 +488,13 @@ int main(int argc, char* argv[])
   glutInitWindowSize( scrH, scrW );
 
   glutCreateWindow( "CG2018 Di Vincenzo" );
+  const GLubyte* renderer = glGetString (GL_RENDERER);
+  const GLubyte* version =  glGetString (GL_VERSION);
+
+  printf ("\n[DEBUG]\tRenderer: %s\n", renderer);
+  printf ("[DEBUG]\tOpenGL version supported: %s\n", version);
+
+
   world.BindBuffers(); // setup the buffers so that we don't need to resend all the geometry to the GPU when drawing the world 
   bike.BindBuffers(); // same, but the efficient way is used only on some meshes, since others have some problems
 
@@ -502,9 +513,10 @@ int main(int argc, char* argv[])
   glPolygonOffset(1,1);             // indietro di 1
 
   TextureProvider* texProvider = TextureProvider::getInstance();
+  srand(time(NULL));
   
   texProvider->LoadTexture("Resources/wheel.jpg");
-  texProvider->LoadTexture("Resources/OLD/envmap_flipped.jpg");
+  texProvider->LoadTexture("Resources/OLD/logo.jpg");
   texProvider->LoadTexture("Resources/sky_ok.png");
   texProvider->LoadTexture("Resources/camouflage.jpg");
   texProvider->LoadTexture("Resources/me.png");
@@ -512,11 +524,15 @@ int main(int argc, char* argv[])
   texProvider->LoadTexture("Resources/asphalt2.jpg");
   texProvider->LoadTexture("Resources/text.png");
   texProvider->LoadTexture("Resources/menu.png");
-  texProvider->LoadTexture("Resources/dice.jpg");
   texProvider->LoadTexture("Resources/universe.jpg");
-  texProvider->LoadTexture("Resources/moquette.jpg");
+  texProvider->LoadTexture("Resources/metal.jpg");
   texProvider->LoadTexture("Resources/wall1.jpg");
   texProvider->LoadTexture("Resources/wall2.jpg");
+  texProvider->LoadTexture("Resources/dice1.jpg");
+  texProvider->LoadTexture("Resources/dice2.jpg");
+  texProvider->LoadTexture("Resources/dice3.jpg");
+  texProvider->LoadTexture("Resources/dice4.jpg");
+  texProvider->LoadTexture("Resources/dice5.jpg");
 
   glutDisplayFunc(renderHandle);
 
@@ -531,6 +547,6 @@ int main(int argc, char* argv[])
   glutMainLoop();
  
     
-return (0);
+  return 0;
 }
 

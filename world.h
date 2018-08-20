@@ -6,9 +6,11 @@
 #include "Geometry/sMesh.h"
 #include "tiles.h"
 
-
-// var globale di tipo mesh
-sMesh pista( (char*) "./Resources/pista.obj");
+/*
+*
+*  This holds the environment! It handles the floor, the sky and the tiles.
+*
+*/
 
 extern bool useEnvmap; // var globale esterna: per usare l'evnrionment mapping
 extern bool useHeadlight; // var globale esterna: per usare i fari
@@ -20,7 +22,7 @@ class World {
 
     private:
 
-        Tile* last_tile = nullptr; 
+        Tile* last_tile = nullptr; //to optimize subsequent calls to find the tile the bike is on
 
         std::vector<Tile*> tiles;
         std::vector<float> vertices;
@@ -148,9 +150,14 @@ class World {
             cube->Scale(1.5,1.5,1.5);
             cube->Translate(30, 1.5, 20);
 
+            WhirligigTile* whirl = new WhirligigTile((char*) "./Resources/whirligig.obj");
+            whirl->Scale(3,3,3);
+            whirl->Translate(-30, 0, -20);
+
             tiles.push_back(obstacle);
             tiles.push_back(obstacle2);
             tiles.push_back(cube);
+            tiles.push_back(whirl);
             tiles.push_back(sphere);
 
             // for (auto tile : tiles) {

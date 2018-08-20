@@ -65,10 +65,10 @@ class sMesh {
 
             // Create and initialize a buffer object
             glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-            glBufferData(GL_ARRAY_BUFFER, 6*sizeof(Point3)*v.size(), points.data(), mode); // trust me
+            glBufferData(GL_ARRAY_BUFFER, sizeof(Point3)*points.size(), points.data(), mode); // trust me
 
             glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
-            glBufferData(GL_ARRAY_BUFFER, 6*sizeof(Vector3)*v.size(), normals.data(), mode);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3)*points.size(), normals.data(), mode);
         }
 
         void ComputeNormalsPerFace() {

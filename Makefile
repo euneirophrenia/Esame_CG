@@ -32,7 +32,7 @@ endif
 LDFLAGS=$(LDFLAGS) "-L./Geometry"  "-L./Glew"
 CFLAGS=$(CFLAGS) "-I./Geometry" "-I./Glew"
 
-FLAG = -Wno-deprecated
+FLAG =-Wno-deprecated
 RM = rm -f
 
 all: $(BIN)

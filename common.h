@@ -26,6 +26,8 @@
 #define CAMERA_FRONT 5
 #define CAMERA_TYPE_MAX 6
 
+static float FOUR_1[] {1,1,1,1};
+
 //----------------------------------------------------------------------------
 //
 // --- Include OpenGL header files and helpers ---

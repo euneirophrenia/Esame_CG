@@ -10,6 +10,9 @@ extern bool useShadow;
 extern bool useEnvmap;
 extern int cameraType;
 
+const Vector3 SOLDIER_GREEN(31.0/255, 112.0/255, 73.0/255);
+const Vector3 HEAD_HACK(38/255.0f, 25/255.0f, 16/255.0f);
+
 class Vehicle {
 
     protected:
@@ -26,8 +29,8 @@ class Vehicle {
             {
                 glEnable(usedLight);
                 
-                float col0[4]= {0.8,0.8,0.0,  1};
-                glLightfv(usedLight, GL_DIFFUSE, col0);
+                //float col0[4]= {0.8, 0.8,0.0,  1};
+                glLightfv(usedLight, GL_DIFFUSE, FOUR_1);
                 
                 float col1[4]= {0.5,0.5,0.0,  1};
                 glLightfv(usedLight, GL_AMBIENT, col1);
@@ -181,7 +184,7 @@ class MotorBike : public Vehicle {
             if (usecolor) {
                 //glColor3f(1,1,1);
                 //SetupTexture(3, pilot->bbmin, pilot->bbmax);
-                glColor3f(31.0/255, 112.0/255, 73.0/255);
+                glColor3f(SOLDIER_GREEN.X(), SOLDIER_GREEN.Y(), SOLDIER_GREEN.Z());
             }
             pilot->RenderArray(); // to be more efficient
             glDisable(GL_TEXTURE_2D);
@@ -190,10 +193,11 @@ class MotorBike : public Vehicle {
 
             if (usecolor) {
                 glColor3f(1,1,1);
+                //don't bother using the face texture if nobody can see it
                 if (cameraType == CAMERA_FRONT || cameraType == CAMERA_MOUSE)
                     SetupTexture(4, face->bbmin, face->bbmax, GL_OBJECT_LINEAR);
                 else 
-                    glColor3f(38/255.0f, 25/255.0f, 16/255.0f);
+                    glColor3f(HEAD_HACK.X(), HEAD_HACK.Y(), HEAD_HACK.Z());
             }
             face->RenderArray();
             glDisable(GL_TEXTURE_2D);
@@ -201,7 +205,7 @@ class MotorBike : public Vehicle {
             glDisable(GL_TEXTURE_GEN_T);
 
             if(usecolor) {
-                glColor3f(31.0f/255, 112.0f/255, 73.0f/255);
+                glColor3f(SOLDIER_GREEN.X(), SOLDIER_GREEN.Y(), SOLDIER_GREEN.Z());
             }
             helmet->RenderArray();
 
@@ -223,8 +227,6 @@ class MotorBike : public Vehicle {
             py = 0.0;
             
             vx=vy=vz=0;      // velocita' attuale
-             //to prevent some NaN #hacks
-            vz = 0.000001;
 
             mozzoA = mozzoP = sterzo =0;
 
@@ -287,6 +289,8 @@ class MotorBike : public Vehicle {
             vxm*=attritoX;  
             vym*=attritoY;
             vzm*=attritoZ;
+
+            vzm+=0.000001; // #hacks così che la moto non sparisca a causa di NaN later on
             
             // l'orientamento della macchina segue quello dello sterzo
             // (a seconda della velocita' sulla z)

@@ -4,11 +4,11 @@
 
 ## **Introduzione**
 Questo progetto è stato realizzato in **C++** (standard 11) con 
-- **OpenGL**
+- **OpenGL** (2.1+)
 - **GLUT / FreeGLUT**
 - **SDL_Image** (per il solo caricamento di textures)
 
-E' stato realizzato e testato su MacOS 10.12, ma dovrebbe funzionare ugualmente anche su versioni più recenti (ammesso che i framework richiesti si trovino nelle posizioni di default).
+E' stato realizzato e testato su **MacOS 10.12**, ma *dovrebbe* funzionare ugualmente anche su versioni più recenti (ammesso che i framework richiesti si trovino nelle posizioni di default).
 
 La compilazione *dovrebbe* essere possibile mediante un semplice ```make```, lasciando che sia l'opportuno ```makefile``` a fare il resto. Il makefile internalmente usa ```g++``` (```gcc```), ma *teoricamente* qualsiasi altro compilatore che supporti lo standard 11 dovrebbe funzionare, previa opportuna specifica nel makefile.
 
@@ -31,7 +31,7 @@ I controlli sono relativamente pochi:
 - ```WASD``` keys per il movimento
 - ```1``` per cambiare la camera
 - ```2``` per attivare/disattivare il rendering in *wireframe*
-- ```3``` per trasformare in cristallo alcuni oggetti (cioè rendendoli trasparenti ma non troppo).
+- ```3``` per trasformare in cristallo alcuni oggetti (cioè rendendoli trasparenti).
 - ```4``` per attivare/disattivare le luci frontali
 - ```5``` per attivare/disattivare le ombre
 - ```M``` per attivare/disattivare la minimappa
@@ -46,14 +46,14 @@ In quella modalità, si usi
 - ```LMB``` (tasto sinistro) per trascinare e cambiare l'angolo di vista.
 
 
-> Non è garantito, al momento, **nessun tipo di interazione via joystick**, principalmente a causa della carenza di hardware con cui testare da parte di chi scrive. *Dovrebbe* comunque essere possibile guidare la moto con il joystick (nel modo intuitivo), ma senza nessuna particolare finezza.
+> Non è garantito, al momento, **nessun tipo di interazione via joystick**, principalmente a causa della carenza di hardware con cui testare da parte di chi scrive. *Dovrebbe* comunque essere possibile guidare la moto con il joystick (nel modo intuitivo), ma senza nessuna particolare finezza. La gestione degli eventi joystick è stata realizzata "al buio" e potrebbe per questo essere difettosa.
 
 ----
 
 ## **Funzionalità OpenGL utilizzate**
 
 * Illuminazione dinamica
-* Applicazione di (numerose) textures sia a oggetti mesh caricati dinamicamente che a figure statice (i.e. *quads*)
+* Applicazione di (numerose) textures sia a (numerosi) oggetti mesh caricati dinamicamente che a figure statice (i.e. *quads*)
     * Sia mediante generazione automatica del mapping sulle coordinate texture che non (i.e. specificandole esplicitamente)
 
 * Resa di ombre
@@ -64,10 +64,10 @@ In quella modalità, si usi
 Il progetto probabilmente non brilla per orginalità, tuttavia è stata dedicata particolare attenzione ad alcuni aspetti.
 
 In primissimo luogo: **l'efficienza**, si è cercato di ottimizzare al meglio in modo tale che il gioco possa eseguire a 60fps stabili (o quasi).
-Questo obiettivo è stato raggiunto mediante l'ottimizzazione delle fasi di rendering in modo da non dover iniviare a ogni frame tutta la geometria alla GPU, ma facendo in modo che questa risieda già in memoria dal principio (da dopo il primo frame).
-OpenGL "moderno" offre anche la possibilità di programmare quasi interamente la pipeline grafica, con l'ausilio di opportuni shaders, per ottenere performance ancora migliori. Tuttavia questa strada non è stata perseguita fino in fondo, soprattutto visto il raggiungimento degli agognati 60fps con l'uso di semplici buffer di memoria.
+Questo obiettivo è stato raggiunto prinicipalmente mediante l'ottimizzazione delle fasi di rendering in modo da non dover iniviare a ogni frame tutta la geometria alla GPU, ma facendo in modo che questa risieda già in memoria dal principio (da dopo il primo frame).
+OpenGL "moderno" offre anche la possibilità di programmare (quasi) interamente la pipeline grafica, con l'ausilio di opportuni shaders, per ottenere performance ancora migliori. Tuttavia questa strada non è stata perseguita fino in fondo, soprattutto visto il raggiungimento degli agognati 60fps con l'uso di semplici buffer di memoria (e vari accorgimenti).
 
-Più nel dettaglio, prima di cominciare con il rendering del primo frame, tutti i vari vertici (e le relative normali) sono inviati e salvati in opportune aree di memoria all'interno della GPU. Il rendering, semplicemente consiste nello specificare alla GPU dove andare a prendere i dati opportuni.
+Più nel dettaglio, prima di cominciare con il rendering del primo frame, tutti i vari vertici (e le relative normali) sono inviati e salvati in opportune aree di memoria all'interno della GPU. Il rendering, semplicemente consiste nello specificare alla GPU dove andare a prendere i dati opportuni, senza perdere tempo a reinviarli. E' importante notare che, in fase di rendering, si è scelto di disegnare triangoli, e per tanto le varie mesh devono essere bufferizzate sulla GPU sottoforma di array di triangoli (array di vertici in cui ogni 3 vertici si è fatto un triangolo). Per rendere semplice l'inizializzazione, quindi, si è scelto di "triangolare" ogni mesh (offline, con Blender) e di eliminare ogni oggetto "aperto", estrudendo anche solo leggermente ogni superficie e chiudendo le superfici concave. Questo permette di stabilire "facilmente" la dimensione che il buffer occuperà nella GPU, siccome ogni vertice sarà utilizzato un numero noto di volte.
 
 In secondo luogo, si è cercato di dare un senso di realismo e coerenza al tutto, realizzando un supporto basilare per la fisica. In particolare, è stato necessario studiare un modo per far sì che la moto seguisse i vari tipi di terreno sia in termini di elevazione che di inclinazione. Maggiori dettagli nel seguito, alla sezione "**Fisica**".
 
@@ -76,7 +76,7 @@ Per quanto riguarda la resa delle ombre, si è adottato un approccio molto simil
 * Della semplice matematica per far sì che l'ombra rimanga sempre attaccata al suolo (e che non voli con la moto)
 * Altra semplice matematica per far sì che l'ombra dei grandi oggetti presenti nella scena abbia un'interazione semi-realistica con le fonti mobili di luce (i.e.: i "fanali" della moto): se le luci sono vicine, l'ombra si affievolisce fino a (quasi) sparire. 
 
-La resa delle trasparenze non è particolarmente meritevole, si ha avuto cura di rendere gli oggetti trasparenti per ultimi ed essendo gli oggetti "statici", non è richiesto nessun ordinamento dinamico. Questa scelta è stata effettuata sempre nell'ottica di garantire 60fps.
+La resa delle trasparenze non è particolarmente meritevole, si ha avuto cura di rendere gli oggetti trasparenti per ultimi ed essendo gli oggetti "statici", non è richiesto nessun ordinamento dinamico. Questa scelta è stata effettuata sempre nell'ottica di garantire 60fps. L'unica accortezza avuta, al fine di evitare spiacevoli sovrapposizioni tra le varie facce dello stesso oggetto trasparente, è stata l'abilitare il *face culling* già gentilmente offerto da OpenGL.
 
 ----
 
@@ -88,13 +88,15 @@ In particolare, i controlli e la meccanica di base sono pressoché identici. Le 
 
 La realizzazione delle pieghe nelle curve è stata relativamente semplice: è stato sufficiente inclinare tutta la moto di un angolo proporzionale allo sterzo e alla velocità (lineare) attuale. Al fine di evitare facili sensi di nausea in retromarcia, si ha avuto cura di far sì che l'angolo di inclinazione sia sempre rivolto (acuto) verso il centro della curva.
 
+L'implementazione concreta dei controlli è stata quasi interamente tratta da ```Car4``` con solo minime e marginali modifiche, per lo più motivate solo dalla diversa gestione degli eventi GLUT rispetto ad SDL.
+
 ### *Terreni, salite e collisioni* 
-Questa parte è stata realizzata da zero, in quanto completamente assente in ```Car4```. A una mente esperta ed allenata probabilmente sembrerà banale, sicuramente non particolarmente intelligente, ma è il meglio che l'autore sia riuscito a concepire.
+Questa parte, invece, è stata realizzata da zero, in quanto completamente assente in ```Car4```. A una mente esperta ed allenata probabilmente sembrerà banale, sicuramente non particolarmente intelligente, ma è il meglio che l'autore sia riuscito a concepire.
 
  La sfida chiave per tutto è la seguente:
 > Dato un punto del mondo (3D) capire quale sia la coordinata Y (l'altezza) del vertice della mesh sottostante più vicino.
 
-Questo è un problema altamente ricorrente (in diverse sfumature) in tutta la computer graphics, solitamente risolto con varianti del ray-tracing.
+Questo è un problema altamente ricorrente (con diverse sfumature) in tutta la computer graphics, solitamente risolto con varianti del ray-tracing.
 Ammesso di avere a disposizione l'algoritmo di ray-tracing, la soluzione sarebbe immediata. Il problema, però, è che tipicamente il ray-tracing è lento (senza contare che l'uso di librerie esterne è stato espressamente proibito e pertanto che lo si sarebbe dovuto realizzare ex-novo). Per questo, si è adottato un approccio diverso.
 
 Il mondo è stato diviso in varie ```Tiles```, dove una ```tile``` corrisponde a un ostacolo fisico (una rampa, un dado...). Ogni ```tile``` è associata ad una mesh per la quale si tiene traccia anche delle varie trasformazioni (rotazioni, traslazioni, scale).
@@ -111,28 +113,30 @@ In questo modo, capire a che altezza si deve trovare la moto per restare sopra l
 Ora è possibile anche stabilire se la moto si schianta contro un muro: se la nuova altezza è "troppo elevata" rispetto alla attuale, è un muro.
 
 Con questa conoscenza in tasca, la moto è in grado di seguire alla lettera ogni superficie, ma mancano ancora due ingredienti fondamentali:
-- La corretta inclinazione
+- La corretta inclinazione della moto lungo i vari terreni
 - La possibilità di effettuare salti!
 
 Stabilire l'inclinazione è relativamente semplice. Inizialmente, si era pensato di calcolare l'altezza della superficie sulla ruota anteriore, l'altezza sulla ruota posteriore ed inclinare di conseguenza. Per quanto teoricamente possibile, questo metodo si è mostrato numericamente inaffidabile e difficile da correggere, per cui si è ripiegato su un approccio più uniforme con quanto fatto fino a questo punto.
 
-Nonostante dovesse essere conoscenza pregressa ampiamente consolidata, un buon ripasso di Analisi ha permesso di ricordare che, data una superficie nella forma ```F(x,y,z)=0```, il suo gradiente è perpendicolare alla superficie, punto per punto. A questo punto, è stato "banale" trovare la direzione in cui indirizzare la moto, ragionando esattamente come in precedenza:
+Nonostante dovesse essere conoscenza pregressa ampiamente consolidata, un buon ripasso di Analisi ha permesso di ricordare che, data una superficie nella forma ```F(x,y,z)=0```, il suo gradiente è perpendicolare alla superficie, punto per punto. A questo punto, è stato "banale" (si notino le virgolette) trovare la direzione in cui indirizzare la moto, ragionando esattamente come in precedenza:
 
 1. Trovo la ```tile``` in cui è locata la moto
 2. Mi riporto in coordinate ```tile```
 3. Calcolo il gradiente, semplicemente applicando calcoli (in pratica 3 funzioni) precedentemente risolti a mano su carta (d'accordo, magari in alcuni casi con l'aiuto di qualche strumento che calcola le derivate automaticamente).
 
+Ora, avendo la normale alla superficie e avendo la normale attuale si può facilmente ricavare l'angolo di cui correggere l'inclinazione mediante un ```acos``` e un prodotto scalare, in modo da far sì che la normale attuale coincida con la normale alla superficie.
+
 Questo approccio funziona, ma non è esattamente realistico. Questa volta non è stato necessario ragionare a lungo, perché il problema (e la soluzione) erano evidenti da subito: le derivate andrebbero calcolate nella direzione di moto, se la moto si muove perpendicolare al gradiente, l'inclinazione deve essere 0. Questa considerazione porta quindi a uno step ulteriore:
 
 4. Trovare il prodotto scalare tra la velocità (normalizzata) e la normale calcolata al punto 3.
 
-A questo punto è possibile capire l'angolo di cui ruotare la moto (idealmente, di cui ruotare il vettore velocità) con un semplice ```acos```. 
+A questo punto è possibile capire l'angolo di cui ruotare la moto (idealmente, di cui ruotare il vettore velocità) con un semplice ```acos```, in modo tale che la velocità risulti sempre perpendicolare alla normale.
 
-Anche questo metodo ha la sua buona dose di incertezza, dato il dover passare per una funzione dal dominio ristretto come l' ```acos```. In particolare, se ruotassimo davvero il vettore velocità, ossia aggiornando congruemente i valori della velocità "orizzontale" e i valori della velocità "verticale", si verificano situazioni spiacevoli in cui i valori degenerano (```NaN```) portando alla scomparsa (assai prematura) della moto e del soldatino. Sicuramente, una persona più intelligente del sottoscritto potrebbe agilmente trovare i problemi e correggerli, ma siccome il tempo e il QI dell'autore sono ampiamente limitati, si è deciso di vivere con una fisica semplificata che, pur essendo quasi verosimile agli occhi, di fatto imbroglia.
+Anche questo metodo ha la sua buona dose di incertezza, dato il dover passare per una funzione dal dominio ristretto come l' ```acos```. In particolare, se ruotassimo davvero il vettore velocità, ossia aggiornando congruemente i valori della velocità "orizzontale" e i valori della velocità "verticale", si verificano situazioni spiacevoli in cui i valori degenerano (```NaN```) portando alla scomparsa (assai prematura) della moto e del soldatino. Sicuramente, una persona più intelligente del sottoscritto potrebbe agilmente trovare i problemi e correggerli, ma siccome il tempo e il Q.I. dell'autore sono ampiamente limitati, si è deciso di vivere con una fisica semplificata che, pur essendo quasi verosimile agli occhi, di fatto imbroglia. In pratica, quindi, la velocità verticale non è mai variata e semplicemente si corregge la posizione verticale a mano.
 
 L'ultimo step rimasto è rendere la moto in grado di fare "salti".
 A questo punto, la stessa persona più acuta di cui sopra, avendo un vero vettore velocità, con componenti veritiere, potrebbe agilmente applicare banali leggi da prima superiore sul moto uniformemente accelerato ed ottenere risultati perfetti. L'autore, invece, ha deciso di andare fino in fondo con un approccio "trompe l'oeil" e semplicemente far sì che, qualora la moto si trovi sensibilmente al di sopra della sua superficie sottostante, la sua altitudine sia calata linearmente fino a raggiungimento della superficie.
-Questo è chiaramente fisicamente sbagliato, ma per piccoli salti, la differenza non è incredibilmente netta. Si ha avuto cura di rendere tutti i salti possibili piccoli.
+Questo è chiaramente fisicamente sbagliato, ma per piccoli salti, la differenza non è incredibilmente netta. Si ha avuto cura di rendere tutti i salti possibili piccoli, così che la differenza tra una parabola e una retta non sia molto apprezzabile.
 
 Come probabilmente è trasparso, c'è una discreta quantità di tuning a mano di vari parametri, per il quale si è deciso di omettere i dettagli; non ci sono stati particolari ragionamenti, solo vari tentativi.
 
@@ -146,13 +150,15 @@ La UI è stata disegnata per avere il minimo impatto sulle perfomance. In partic
 
 Per quanto riguarda il menù comandi e la minimappa, si è optato per una realizzazione "offline". Entrambi, infatti, sono mostrati come semplici texture applicate ad opportuni ```quad```.
 
-La barra laterale che mostra un feedback visivo della velocità è ampiamente ispirata alla barra dei FPS già presente in ```Car4```: un quad di colore (in questo caso) fisso (e non proporzionale all'altezza) e di altezza proporzionale alla velocità.
+La barra laterale che mostra un feedback visivo della velocità è ampiamente ispirata alla barra dei FPS già presente in ```Car4```: un quad di colore (in questo caso) fisso (e non più proporzionale all'altezza) e di altezza proporzionale alla velocità.
 
 
+-----
 
+## **Potenziali problemi**
+1. Uso prolungato (15+ minuti, variabile con la temperatura atmosferica) può causare *surriscaldamento* del PC. Questo è dovuto a una serie di scelte e comportamenti adottati che sacrificano un sano uso di risorse sull'altare dei FPS. In particolare, si è scelto di *non attendere* il completamento delle operazioni di resa di un frame prima di iniziare a lavorare sul successivo (ossia, nessuna chiamata ```glFinish()```). Questo non causa nessun difetto (apparente) nella resa, ma priva la GPU di momenti in cui la pipeline è inattiva; in altre parole, si priva la GPU di importanti momenti per raffreddarsi, provocando, alla lunga, probabile surriscaldamento.
 
-
-
+> In sintesi, sebbene lo scopo del gioco sia non far morire il soldatino, si consiglia di terminare la sua esistenza entro 15-20 minuti.
 
 
 
