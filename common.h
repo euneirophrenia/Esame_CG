@@ -26,6 +26,8 @@
 #define CAMERA_FRONT 5
 #define CAMERA_TYPE_MAX 6
 
+#define ROOM_SIZE 100
+
 static float FOUR_1[] {1,1,1,1};
 
 //----------------------------------------------------------------------------

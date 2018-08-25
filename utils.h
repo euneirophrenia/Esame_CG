@@ -22,6 +22,17 @@ const std::vector<std::vector<Point3>> cube_faces {
 
 const std::vector<Vector3> cube_normals { Vector3(0,0,1), Vector3(0,0,-1), Vector3(0,1,0), Vector3(0,-1,0), Vector3(1,0,0), Vector3(-1,0,0)};
 
+inline Point2 rotateAround(Point2 src, Point3 center, float angle) {
+  float cosine = cos(angle);
+  float sine = sin(angle);
+
+  Point3 diff = src - center;
+
+  return Point2(center.coord[0] + diff.coord[0]*cosine + diff.coord[1]*sine,
+                center.coord[1] - diff.coord[0]*sine + diff.coord[1]*cosine);
+
+}
+
 // Funzione che prepara tutto per usare un env map
 void SetupEnvmapTexture(int texture, GLuint mode = GL_SPHERE_MAP)
 {
@@ -141,6 +152,10 @@ class TextureProvider {
       }
       map[name] = count;
       count++;
+    }
+
+    inline int indexOf(std::string texname) {
+      return map[texname];
     }
 
     static TextureProvider* getInstance() {

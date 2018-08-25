@@ -13,6 +13,8 @@ extern int cameraType;
 const Vector3 SOLDIER_GREEN(31.0/255, 112.0/255, 73.0/255);
 const Vector3 HEAD_HACK(38/255.0f, 25/255.0f, 16/255.0f);
 
+extern TextureProvider* texProvider;
+
 class Vehicle {
 
     protected:
@@ -115,6 +117,7 @@ class MotorBike : public Vehicle {
         World* world_reference;
         float length;
         float MAX_STEP;
+        float last_orientation=M_PI;
 
     protected:
         sMesh* carlinga = new sMesh((char*)"./Resources/Bike/carlinga.obj");
@@ -144,7 +147,7 @@ class MotorBike : public Vehicle {
                 glTranslate( -front_wheel->Center());
                 if (usecolor){
                     glColor3f(.6,.6,.6);
-                    SetupTexture(6, front_wheel->bbmin, front_wheel->bbmax);
+                    texProvider->SetupAutoTexture2D("Resources/asphalt2.jpg", front_wheel->bbmin, front_wheel->bbmax);
                     glColor3f(0.9,0.9,0.9);
                 }
                 front_wheel->RenderNxF();
@@ -158,7 +161,7 @@ class MotorBike : public Vehicle {
 
                 if (usecolor) {
                     glColor3f(.6,.6,.6);
-                    SetupTexture(6, back_wheel->bbmin, back_wheel->bbmax);
+                    texProvider->SetupAutoTexture2D("Resources/asphalt2.jpg", back_wheel->bbmin, back_wheel->bbmax);
                     glColor3f(0.9,0.9,0.9);
                 }
                 back_wheel->RenderNxV();
@@ -173,7 +176,7 @@ class MotorBike : public Vehicle {
             carlinga->RenderArray(); // rendering delle mesh carlinga usando normali per vertice
             if (usecolor) {
                 glColor3f(1,1,1);
-                SetupTexture(7, plate->bbmin, plate->bbmax);
+                texProvider->SetupAutoTexture2D("Resources/text.png", plate->bbmin, plate->bbmax);
             }
             plate->RenderNxF();
             glDisable(GL_TEXTURE_2D);
@@ -195,7 +198,7 @@ class MotorBike : public Vehicle {
                 glColor3f(1,1,1);
                 //don't bother using the face texture if nobody can see it
                 if (cameraType == CAMERA_FRONT || cameraType == CAMERA_MOUSE)
-                    SetupTexture(4, face->bbmin, face->bbmax, GL_OBJECT_LINEAR);
+                    texProvider->SetupAutoTexture2D("Resources/me.png", face->bbmin, face->bbmax, GL_OBJECT_LINEAR);
                 else 
                     glColor3f(HEAD_HACK.X(), HEAD_HACK.Y(), HEAD_HACK.Z());
             }
@@ -218,6 +221,18 @@ class MotorBike : public Vehicle {
         MotorBike(World* w) { 
             Init(); 
             world_reference = w;
+        }
+
+        inline float horizontal_orientation() {
+            if (vx*vz == 0)
+                return last_orientation;
+            if (vz == 0){
+                last_orientation = 0;
+                return 0;
+            }
+
+            last_orientation = -atan2(vx, vz);
+            return last_orientation;
         }
 
         void Init() {

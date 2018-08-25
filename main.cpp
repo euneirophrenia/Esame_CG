@@ -20,9 +20,18 @@ bool useHeadlight=false;
 bool useShadow=true;
 bool showMinimap = false;
 bool showMenu = false;
+bool useBadWireFrame = false;
+bool stopTime = false;
 int cameraType=0;
 
-std::string floor_texture = "Resources/wood.jpg";
+// for minimap
+const Point2 A(0.5, 0.65);
+const Point2 B(0.45, 0.45);
+const Point2 C(0.55, 0.45);
+const Point3 center = (A+B+C)/3.0;
+//------
+
+std::string floor_texture = "Resources/parquet.jpg";
 
 int previous_mouse_position[2] = {0, 0};
 
@@ -183,22 +192,38 @@ void setInputState(bool active);
 void rendering(bool);
 
 void DrawMiniMap() {
+  float scale_factor = 20;
   glViewport(scrW*0.5, scrH*0.5, scrW*0.5, scrH*0.5);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  glColor3f(0,1,0);
-  glBegin(GL_QUADS);  //todo texture with the road view and put a mark at bike position
-    glVertex2d(10,0);
-    glVertex2d(10,20);
-    glVertex2d(0,20);
-    glVertex2d(0,0);
-
+  glColor3f(0.8, 0.8, 0.8);
+  glBegin(GL_QUADS); 
+    glVertex2d(1, 0);
+    glVertex2d(1, 1);
+    glVertex2d(0, 1);
+    glVertex2d(0, 0);
   glEnd();
 
-  glViewport(0, 0, scrW, scrH);
+  for (auto tile: world.getTiles()){
+    tile->DrawMiniMarker(scale_factor);
+  }
 
+  glPushMatrix();
+    glColor3f(1,0,0);
+    glBegin(GL_TRIANGLES);
+        auto tmp = rotateAround(A, center, bike.horizontal_orientation());
+        glVertex2f(tmp.coord[0] , tmp.coord[1]);
+
+        tmp = rotateAround(B, center, bike.horizontal_orientation());
+        glVertex2f(tmp.coord[0] , tmp.coord[1]);
+
+        tmp = rotateAround(C, center, bike.horizontal_orientation());
+        glVertex2f(tmp.coord[0] , tmp.coord[1]);
+    glEnd();
+  glPopMatrix();
+  glViewport(0, 0, scrW, scrH);
 }
 
 // Draw text and other infos
@@ -206,7 +231,7 @@ void DrawUI(){
 
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_LIGHTING);
-  glDisable(GL_CULL_FACE);
+  glDisable(GL_CULL_FACE); // it's actually funnier with culling, but wrong
   glPolygonMode( GL_FRONT_AND_BACK, GL_FILL);
  
   DrawText(0, scrH-20, "FPS " + std::to_string(fps));
@@ -231,7 +256,7 @@ void DrawUI(){
     glLoadIdentity();
     glColor3f(1,1,1);
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, 8);
+    glBindTexture(GL_TEXTURE_2D, texProvider->indexOf("Resources/menu.png"));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glBegin(GL_QUADS);  
@@ -365,6 +390,7 @@ void keyboardDownHandler(unsigned char key, int x, int y) {
             break;
           case '2':
             useWireframe=!useWireframe;
+            useBadWireFrame = useWireframe? useBadWireFrame : false;
             break;
           case '3': 
             useTransparency=!useTransparency;
@@ -377,8 +403,17 @@ void keyboardDownHandler(unsigned char key, int x, int y) {
              break;
           case 'q': 
             exit(0);
-          case 32:  
+          case 27: //escape
+            exit(0);
+          case 32:  //spacebar (for debug purposes)
             Log();
+            break;
+          case '0':
+            useBadWireFrame = !useBadWireFrame;
+            useWireframe = useBadWireFrame;
+            break;
+          case 'p':
+            stopTime = !stopTime;
             break;
           case 'm': 
             showMinimap=!showMinimap;
@@ -504,7 +539,7 @@ int main(int argc, char* argv[])
   glEnable(GL_NORMALIZE); // opengl, per favore, rinormalizza le normali prima di usarle
   glEnable(GL_CULL_FACE);
   glFrontFace(GL_CW); // consideriamo Front Facing le facce ClockWise
-
+  
   glEnable(GL_COLOR_MATERIAL);
   glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
   glEnable(GL_POLYGON_OFFSET_FILL); // caro openGL sposta i 
@@ -515,24 +550,24 @@ int main(int argc, char* argv[])
   TextureProvider* texProvider = TextureProvider::getInstance();
   srand(time(NULL));
   
-  texProvider->LoadTexture("Resources/wheel.jpg");
   texProvider->LoadTexture("Resources/OLD/logo.jpg");
-  texProvider->LoadTexture("Resources/sky_ok.png");
-  texProvider->LoadTexture("Resources/camouflage.jpg");
   texProvider->LoadTexture("Resources/me.png");
   texProvider->LoadTexture("Resources/wood.jpg");
+  texProvider->LoadTexture("Resources/parquet.jpg");
   texProvider->LoadTexture("Resources/asphalt2.jpg");
   texProvider->LoadTexture("Resources/text.png");
   texProvider->LoadTexture("Resources/menu.png");
   texProvider->LoadTexture("Resources/universe.jpg");
-  texProvider->LoadTexture("Resources/metal.jpg");
-  texProvider->LoadTexture("Resources/wall1.jpg");
   texProvider->LoadTexture("Resources/wall2.jpg");
+  texProvider->LoadTexture("Resources/wall3.jpg");
+  texProvider->LoadTexture("Resources/wall4.jpg");
+  texProvider->LoadTexture("Resources/walldoor.jpg");
   texProvider->LoadTexture("Resources/dice1.jpg");
   texProvider->LoadTexture("Resources/dice2.jpg");
   texProvider->LoadTexture("Resources/dice3.jpg");
   texProvider->LoadTexture("Resources/dice4.jpg");
   texProvider->LoadTexture("Resources/dice5.jpg");
+  texProvider->LoadTexture("Resources/carpet.jpg");
 
   glutDisplayFunc(renderHandle);
 

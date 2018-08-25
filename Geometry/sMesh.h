@@ -12,6 +12,7 @@
 */
 
 extern bool useWireframe;
+extern bool useBadWireFrame;
 extern bool useTransparency;
 
 class sMesh {
@@ -113,20 +114,23 @@ class sMesh {
             glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
             glVertexPointer(3, GL_FLOAT, sizeof(Point3), BUFFER_OFFSET(0));
            
-            if (useWireframe) {
+            if (useWireframe || useBadWireFrame) {
                 glDisable(GL_TEXTURE_2D);
                 glColor3f(0.5, 0.5, 0.5);
                 // glDrawArrays(GL_LINES, 0, sizeof(Point3)*v.size());
                 // glColor3f(0.8,0.8,0.8);
                 glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-                //glDrawArrays(GL_TRIANGLES, 0, sizeof(Point3)*v.size());
-                //glColor3f(0.8, 0.8, 0.8);
+                if (useBadWireFrame) {
+                    glDrawArrays(GL_TRIANGLES, 0, sizeof(Point3)*v.size());
+                    glColor3f(0.8, 0.8, 0.8);
+                }
             }
-            else   
+            if (!useWireframe || useBadWireFrame)
                 glPolygonMode( GL_FRONT_AND_BACK, GL_FILL);
             glDrawArrays(GL_TRIANGLES, 0, sizeof(Point3)*v.size());
             glDisableClientState(GL_VERTEX_ARRAY);
             glDisableClientState(GL_NORMAL_ARRAY);
+            //glColor3f(1,1,1);
         }
 
         void RenderWire() {
@@ -154,20 +158,23 @@ class sMesh {
                 RenderWire(); 
                 glColor3f(1,1,1);
             }
+
+            if (!useWireframe || useBadWireFrame) {
             
-            // mandiamo tutti i triangoli a schermo
-            glBegin(GL_TRIANGLES);
-            for (int i=0; i<f.size(); i++) 
-            {
-                f[i].n.SendAsNormal(); // flat shading
-                
-                (f[i].v[0])->p.SendAsVertex();
-                
-                (f[i].v[1])->p.SendAsVertex();
-                
-                (f[i].v[2])->p.SendAsVertex();
+                // mandiamo tutti i triangoli a schermo
+                glBegin(GL_TRIANGLES);
+                for (int i=0; i<f.size(); i++) 
+                {
+                    f[i].n.SendAsNormal(); // flat shading
+                    
+                    (f[i].v[0])->p.SendAsVertex();
+                    
+                    (f[i].v[1])->p.SendAsVertex();
+                    
+                    (f[i].v[2])->p.SendAsVertex();
+                }
+                glEnd();
             }
-            glEnd();
         }
 
         // Render usando la normale per vertice (GOURAUD SHADING)
@@ -179,21 +186,23 @@ class sMesh {
                 RenderWire(); 
                 glColor3f(1,1,1);
             }
-            
-            // mandiamo tutti i triangoli a schermo
-            glBegin(GL_TRIANGLES);
-            for (int i=0; i<f.size(); i++) 
-            {    
-                (f[i].v[0])->n.SendAsNormal(); // gouroud shading (o phong?)
-                (f[i].v[0])->p.SendAsVertex();
-                
-                (f[i].v[1])->n.SendAsNormal();
-                (f[i].v[1])->p.SendAsVertex();
-                
-                (f[i].v[2])->n.SendAsNormal();
-                (f[i].v[2])->p.SendAsVertex();
+
+            if (!useWireframe || useBadWireFrame) {
+                // mandiamo tutti i triangoli a schermo
+                glBegin(GL_TRIANGLES);
+                for (int i=0; i<f.size(); i++) 
+                {    
+                    (f[i].v[0])->n.SendAsNormal(); // gouroud shading (o phong?)
+                    (f[i].v[0])->p.SendAsVertex();
+                    
+                    (f[i].v[1])->n.SendAsNormal();
+                    (f[i].v[1])->p.SendAsVertex();
+                    
+                    (f[i].v[2])->n.SendAsNormal();
+                    (f[i].v[2])->p.SendAsVertex();
+                }
+                glEnd();
             }
-            glEnd();
         }
 
         // trova l'AXIS ALIGNED BOUNDIG BOX

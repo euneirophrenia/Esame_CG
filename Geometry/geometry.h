@@ -39,6 +39,14 @@ class Point3 {
         inline float modulo() const{
             return sqrt(coord[0]*coord[0] + coord[1]*coord[1] + coord[2]*coord[2]);
         }
+
+        inline float sqrnorm() const {
+            return coord[0]*coord[0] + coord[1]*coord[1] + coord[2]*coord[2];
+        }
+
+        inline float l1norm() const {
+            return abs(coord[0]) + abs(coord[1]) + abs(coord[2]);
+        }
         
         // operatore "/" binario: divisione per uno scalare (un float)
         inline Point3 operator / (float f)const{

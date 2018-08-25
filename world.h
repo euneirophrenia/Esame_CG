@@ -6,17 +6,27 @@
 #include "Geometry/sMesh.h"
 #include "tiles.h"
 
+#include <algorithm>
+
 /*
 *
 *  This holds the environment! It handles the floor, the sky and the tiles.
 *
 */
 
-extern bool useEnvmap; // var globale esterna: per usare l'evnrionment mapping
 extern bool useHeadlight; // var globale esterna: per usare i fari
 extern bool useShadow; // var globale esterna: per generare l'ombra
+extern bool useTransparency;
+extern bool useWireframe;
+
+extern Point3 player_position;
 extern std::string floor_texture;
-const std::vector<std::string> wall_textures = {"Resources/wall1.jpg", "Resources/wall2.jpg", "Resources/wall2.jpg", "Resources/wall2.jpg", "Resources/wall2.jpg", "Resources/wall2.jpg"};
+const std::vector<std::string> wall_textures = {"Resources/wall3.jpg", "Resources/wall4.jpg", "Resources/wall3.jpg", "Resources/wall2.jpg", "Resources/walldoor.jpg", "Resources/wall2.jpg"};
+
+//sort by most distant from player
+bool tileCompare(Tile* a, Tile* b) {
+    return (a->center - player_position).l1norm() > (b->center - player_position).l1norm();
+}
 
 class World {
 
@@ -56,7 +66,7 @@ class World {
 
         void drawFloor() {
 
-            const float S=100; // size
+            const float S=ROOM_SIZE; // size
             const float H=0;   // altezza
             const int K=100; //disegna K x K quads
             
@@ -75,14 +85,15 @@ class World {
             
             // disegna KxK quads
             if (!useWireframe) {
-                SetupEnvmapTexture(5, GL_OBJECT_LINEAR); //use floor_texture
+                // SetupEnvmapTexture(texProvider->indexOf(floor_texture), GL_OBJECT_LINEAR);
+                texProvider->SetupAutoTexture2D(floor_texture, Point3(S*0.5/K, 0, S*0.5/K), Point3(-S*0.5/K, 0, -S*0.5/K), GL_OBJECT_LINEAR);
                 glEnable(GL_LIGHTING);
                 //glColor3f(0.7, 0.7, 0.7);
 
             }
 
             glBegin(GL_QUADS);
-                glColor3f(1, 1, 1); // colore uguale x tutti i quads
+                glColor3f(1, 1, 1);
                 glNormal3f(0,1,0);       // normale verticale uguale x tutti
                 
                 for (int x=0; x<K; x++) 
@@ -103,7 +114,7 @@ class World {
         }
 
         void drawSky() {
-            int H = 100;
+            int H = ROOM_SIZE;
 
             if (useWireframe) {
                 glDisable(GL_TEXTURE_2D);
@@ -141,24 +152,49 @@ class World {
             ExponentialSlope* obstacle2 = new ExponentialSlope( (char*) "./Resources/exptile.obj");
             obstacle2->Translate(19, 0, 0);
 
-            SphereTile* sphere = new SphereTile((char*) "./Resources/sphere.obj");
+            AtanTile* obstacle3 = new AtanTile((char*) "./Resources/atantile.obj");
+            obstacle3->Scale(3, 2, 3);
+            obstacle3->Translate(48, 0.1, 0);
+            
+
+            SphereTile* sphere = new SphereTile((char*) "./Resources/sphere.obj", "Resources/universe.jpg", 0.5);
             sphere->Scale(2, 2, 2);
-            sphere->Translate(-19, 2, 4);
+            sphere->Rotate(90);
+            sphere->Translate(-19, 2, 30);
+
+            SphereTile* sphere2 = new SphereTile((char*) "./Resources/sphere.obj");
+            sphere2->Scale(2, 2, 2);
+            sphere2->Rotate(90);
+            sphere2->Translate(19, 2, -19);
+
 
             CubeTile* cube = new CubeTile((char*) "./Resources/cube.obj");
             cube->Rotate(45);
             cube->Scale(1.5,1.5,1.5);
             cube->Translate(30, 1.5, 20);
 
+            CubeTile* cube2 = new CubeTile((char*) "./Resources/cube.obj");
+            cube2->Rotate(45);
+            cube2->Scale(1.5,1.5,1.5);
+            cube2->Translate(-30, 1.5, 20);
+
             WhirligigTile* whirl = new WhirligigTile((char*) "./Resources/whirligig.obj");
-            whirl->Scale(3,3,3);
-            whirl->Translate(-30, 0, -20);
+            whirl->Scale(1.5, 1.5, 1.5);
+            whirl->Translate(-30, 0, -40);
+
+            FlatTile* carpet = new FlatTile((char*) "./Resources/flattile.obj", "Resources/carpet.jpg");
+            carpet->Scale(27, 1, 16.16);
+            carpet->Translate(0, 0.1, -75);
 
             tiles.push_back(obstacle);
             tiles.push_back(obstacle2);
+            tiles.push_back(obstacle3);
             tiles.push_back(cube);
+            tiles.push_back(cube2);
             tiles.push_back(whirl);
+            tiles.push_back(carpet);
             tiles.push_back(sphere);
+            tiles.push_back(sphere2);
 
             // for (auto tile : tiles) {
             //     for (float f : tile->model.Flat_Vertices()) {
@@ -181,8 +217,16 @@ class World {
             drawSky();   
             drawFloor();   
 
-            for (auto tile: tiles)
-                tile->Draw();      
+            if (!useTransparency || useWireframe) {
+                for (auto tile: tiles)
+                    tile->Draw();
+            }
+            else {
+                std::sort(tiles.begin(), tiles.end(), tileCompare);
+                for (auto tile: tiles)
+                    tile->Draw();
+                
+            }
             
         }
 
@@ -221,6 +265,10 @@ class World {
                 }
             }
             return Vector3(0,1,0);
+        }
+
+        inline std::vector<Tile*> getTiles() {
+            return tiles;
         }
 
 
