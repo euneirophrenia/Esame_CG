@@ -20,6 +20,12 @@ class Point3 {
             coord[2]=z;
         }
 
+        Point3 (const float* v) {
+            coord[0] = v[0];
+            coord[1] = v[1];
+            coord[2] = v[2];
+        }
+
         // costruttore vuoto
         Point3(){
             coord[0]=coord[1]=coord[2]=0;

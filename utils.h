@@ -33,6 +33,20 @@ inline Point2 rotateAround(Point2 src, Point3 center, float angle) {
 
 }
 
+const float DEG2RAD = M_PI/180;
+ 
+inline void drawCircle(float radius) {
+   glBegin(GL_LINE_LOOP);
+ 
+   for (int i=0; i <= 360; i++) {
+      float degInRad = i*DEG2RAD;
+      glVertex2f(cos(degInRad)*radius,sin(degInRad)*radius);
+   }
+ 
+   glEnd();
+}
+
+
 // Funzione che prepara tutto per usare un env map
 void SetupEnvmapTexture(int texture, GLuint mode = GL_SPHERE_MAP)
 {

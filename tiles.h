@@ -18,12 +18,12 @@ TextureProvider* texProvider = TextureProvider::getInstance();
 class Tile {
 
     protected:
-        float rotation = 0; //rotation between world and tile-coords
         Vector3 scale = Vector3(1,1,1);
         std::string textureName ;
         bool cullface = true;
         bool uselight = true;
         Vector3 basecolor = Vector3(0.8, 0.8, 0.8);
+        Vector3 friction = Vector3(base_friction);
         
         virtual void DrawShadow() {
             glColor3f(0, 0, 0); // colore fisso
@@ -40,12 +40,16 @@ class Tile {
 
     public:
         Point3 center; //position of the center of the tile in world coordinates (the origin of the tile-coordinates)
+        float rotation = 0; //rotation between world and tile-coords
         sMesh model;
         bool becomesTransparent = false;
         inline void Translate(Vector3 vect) {
             center = center + vect;
         }
 
+        inline Vector3 getScale() {
+            return scale;
+        }
         inline void Translate(float x, float y, float z) {
             center.coord[0] += x;
             center.coord[1] += y;
@@ -121,11 +125,17 @@ class Tile {
 
         virtual float height_at(Point3 point) = 0; 
         virtual Vector3 normal_at(Point3 point) = 0;
+
+        inline Vector3 friction_at(Point3 point) {
+            return friction;
+        }
         
-        virtual void DrawMiniMarker(float scalefactor) {
-            glBegin(GL_QUADS);
-
-
+        virtual void DrawMiniMarker() {
+            glBegin(GL_LINE_LOOP);
+                glVertex2f(model.bbmax.X() / ROOM_SIZE, model.bbmax.Z() / ROOM_SIZE);
+                glVertex2f(model.bbmin.X() / ROOM_SIZE, model.bbmax.Z() / ROOM_SIZE);
+                glVertex2f(model.bbmin.X() / ROOM_SIZE, model.bbmin.Z() / ROOM_SIZE);
+                glVertex2f(model.bbmax.X() / ROOM_SIZE, model.bbmin.Z() / ROOM_SIZE);
             glEnd();
         }
 };
@@ -317,7 +327,7 @@ class SphereTile : public Tile {
 
         void Draw() {
             glPushMatrix();
-                glColor3f(0.5, 0.5, 0.5);
+                glColor3f(1, 1, 1);
                 glTranslatef(center.X(), center.Y(), center.Z());
                 glScalef(scale.X(), scale.Y(), scale.Z());
 
@@ -346,6 +356,10 @@ class SphereTile : public Tile {
             glDisable(GL_TEXTURE_2D);
             glDisable(GL_BLEND);
             glEnable(GL_DEPTH);
+        }
+
+        void DrawMiniMarker() {
+            drawCircle(0.01);
         }
 
 };
@@ -508,6 +522,11 @@ class FlatTile : public CubeTile {
                 textures.push_back(textureName);
             scale.coord[1] = 0.1;
             useligthing = false;
+
+            friction.coord[0] = 0.8;
+            friction.coord[1] = 1;
+            friction.coord[2] = 0.98;
+
         }
 
         float height_at(Point3 point) {
@@ -517,5 +536,6 @@ class FlatTile : public CubeTile {
         Vector3 normal_at(Point3 point) {
             return UP;
         }
+
 
 };

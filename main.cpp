@@ -25,9 +25,9 @@ bool stopTime = false;
 int cameraType=0;
 
 // for minimap
-const Point2 A(0.5, 0.65);
-const Point2 B(0.45, 0.45);
-const Point2 C(0.55, 0.45);
+const Point2 A(0.5, 0.56);
+const Point2 B(0.48, 0.47);
+const Point2 C(0.52, 0.47);
 const Point3 center = (A+B+C)/3.0;
 //------
 
@@ -192,26 +192,42 @@ void setInputState(bool active);
 void rendering(bool);
 
 void DrawMiniMap() {
-  float scale_factor = 20;
-  glViewport(scrW*0.5, scrH*0.5, scrW*0.5, scrH*0.5);
+
+  glViewport(scrW*0.5, 0, scrW*0.5, scrW*0.5 );
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  glColor3f(0.8, 0.8, 0.8);
-  glBegin(GL_QUADS); 
-    glVertex2d(1, 0);
-    glVertex2d(1, 1);
-    glVertex2d(0, 1);
-    glVertex2d(0, 0);
-  glEnd();
+  // glColor3f(0.8, 0.8, 0.8);
+  // glBegin(GL_QUADS); 
+  //   glVertex2d(1, 0);
+  //   glVertex2d(1, 1);
+  //   glVertex2d(0, 1);
+  //   glVertex2d(0, 0);
+  // glEnd();
 
-  for (auto tile: world.getTiles()){
-    tile->DrawMiniMarker(scale_factor);
-  }
+  glPushMatrix();
+    glColor3f(0, 1, 0);
+  
+    glTranslated(player_position.X()/ROOM_SIZE, player_position.Z()/ROOM_SIZE, 0);
+
+    for (auto tile: world.getTiles()){
+      glPushMatrix();
+  
+        glTranslated(-tile->center.X()/ROOM_SIZE, -tile->center.Z()/ROOM_SIZE, 0);
+        auto s = tile->getScale();
+        glScaled(s.X(), s.Z(), 1);
+        glRotated(tile->rotation, 0, 0, 1);
+      
+        tile->DrawMiniMarker();
+        
+      glPopMatrix();
+    }
+  glPopMatrix();
 
   glPushMatrix();
     glColor3f(1,0,0);
+    glTranslatef(-center.X(), -center.Y(), 0);
     glBegin(GL_TRIANGLES);
         auto tmp = rotateAround(A, center, bike.horizontal_orientation());
         glVertex2f(tmp.coord[0] , tmp.coord[1]);
@@ -270,6 +286,7 @@ void DrawUI(){
         glVertex2d(0,0);
     glEnd();
     glDisable(GL_TEXTURE_2D);
+    glViewport(0, 0, scrW, scrH);
   }
   
   // Draw a bar to represent the velocity
@@ -558,6 +575,7 @@ int main(int argc, char* argv[])
   texProvider->LoadTexture("Resources/text.png");
   texProvider->LoadTexture("Resources/menu.png");
   texProvider->LoadTexture("Resources/universe.jpg");
+  texProvider->LoadTexture("Resources/wall1.jpg");
   texProvider->LoadTexture("Resources/wall2.jpg");
   texProvider->LoadTexture("Resources/wall3.jpg");
   texProvider->LoadTexture("Resources/wall4.jpg");
@@ -568,6 +586,7 @@ int main(int argc, char* argv[])
   texProvider->LoadTexture("Resources/dice4.jpg");
   texProvider->LoadTexture("Resources/dice5.jpg");
   texProvider->LoadTexture("Resources/carpet.jpg");
+  texProvider->LoadTexture("Resources/ball2.jpg");
 
   glutDisplayFunc(renderHandle);
 

@@ -21,7 +21,7 @@ extern bool useWireframe;
 
 extern Point3 player_position;
 extern std::string floor_texture;
-const std::vector<std::string> wall_textures = {"Resources/wall3.jpg", "Resources/wall4.jpg", "Resources/wall3.jpg", "Resources/wall2.jpg", "Resources/walldoor.jpg", "Resources/wall2.jpg"};
+const std::vector<std::string> wall_textures = {"Resources/wall3.jpg", "Resources/wall4.jpg", "Resources/wall3.jpg", "Resources/wall2.jpg", "Resources/walldoor.jpg", "Resources/wall1.jpg"};
 
 //sort by most distant from player
 bool tileCompare(Tile* a, Tile* b) {
@@ -162,7 +162,7 @@ class World {
             sphere->Rotate(90);
             sphere->Translate(-19, 2, 30);
 
-            SphereTile* sphere2 = new SphereTile((char*) "./Resources/sphere.obj");
+            SphereTile* sphere2 = new SphereTile((char*) "./Resources/sphere.obj", "Resources/ball2.jpg");
             sphere2->Scale(2, 2, 2);
             sphere2->Rotate(90);
             sphere2->Translate(19, 2, -19);
@@ -239,6 +239,24 @@ class World {
 
         inline float height_at(float x, float z) {
             return height_at(Point3(x,0,z));
+        }
+
+        inline Vector3 friction_at(float x, float z) {
+            return friction_at(Point3(x, 0, z));
+        }
+
+        inline Vector3 friction_at(Point3 point){
+            if (last_tile != nullptr && last_tile->hasInside(point))
+                return last_tile->friction_at(point);
+
+            for (auto tile : tiles) {
+                if (tile != last_tile && tile->hasInside(point)) {
+                    last_tile = tile;
+                    return tile->friction_at(point);
+                }
+            }
+
+            return base_friction;
         }
 
         inline float height_at(Point3 point) {

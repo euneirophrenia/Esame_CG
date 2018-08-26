@@ -231,7 +231,7 @@ class MotorBike : public Vehicle {
                 return 0;
             }
 
-            last_orientation = -atan2(vx, vz);
+            last_orientation = -atan2(vx, -vz);
             return last_orientation;
         }
 
@@ -301,9 +301,10 @@ class MotorBike : public Vehicle {
             if (controller.key[Controller::DEC]) vzm += accMax; // accelerazione indietro
             
             // attirti (semplificando)
-            vxm*=attritoX;  
-            vym*=attritoY;
-            vzm*=attritoZ;
+            Vector3 attrito = world_reference->friction_at(px, pz);
+            vxm*=attrito.X();  
+            vym*=attrito.Y();
+            vzm*=attrito.Z();
 
             vzm+=0.000001; // #hacks così che la moto non sparisca a causa di NaN later on
             

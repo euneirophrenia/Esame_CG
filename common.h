@@ -26,9 +26,11 @@
 #define CAMERA_FRONT 5
 #define CAMERA_TYPE_MAX 6
 
-#define ROOM_SIZE 100
+#define ROOM_SIZE 100.0
+#define MAP_SIZE 50.0
 
 static float FOUR_1[] {1,1,1,1};
+const float base_friction[] {0.8, 1, 0.991};
 
 //----------------------------------------------------------------------------
 //
