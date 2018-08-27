@@ -3,6 +3,7 @@
 #include "Geometry/geometry.h"
 #include <map>
 #include <string.h>
+#include "ppm.h"
 
 
 extern int scrH, scrW;
@@ -114,9 +115,8 @@ class TextureProvider {
     int count=0;
     static TextureProvider* instance;
 
-    static bool LoadTexture(int textbind, char *filename){
-        GLenum texture_format;
-
+    /*static bool LoadTexture(int textbind, char *filename){
+      GLenum texture_format;
       SDL_Surface *s = IMG_Load(filename);
 
       if (!s) return false;
@@ -153,14 +153,14 @@ class TextureProvider {
       // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 
       return true;
-    }
+    }*/
 
     TextureProvider() {}
 
 
   public:
     void LoadTexture(std::string name) {
-      if (!LoadTexture(count, (char*) name.data())){
+      if (!LoadPPM(count, name)){
         printf("[FATAL] Could not load texture \"%s\", exiting\n", name.data());
         exit(-1);
       }

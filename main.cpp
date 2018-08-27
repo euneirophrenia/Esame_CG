@@ -1,15 +1,10 @@
 #include <math.h>
 #include <unistd.h>
-
-#ifdef __APPLE__
-  #include <SDL2_image/SDL_image.h>
-#else
-  #include <SDL2/SDL_image.h>
-#endif
+#include <time.h>
 
 #include "vehicles.h"
 #include "world.h"
-#include <time.h>
+
 
 float viewAlpha=20, viewBeta=40; // angoli che definiscono la vista
 float eyeDist=5.0; // distanza dell'occhio dall'origine
@@ -31,7 +26,7 @@ const Point2 C(0.52, 0.47);
 const Point3 center = (A+B+C)/3.0;
 //------
 
-std::string floor_texture = "Resources/parquet.jpg";
+std::string floor_texture = "Resources/parquet.ppm";
 
 int previous_mouse_position[2] = {0, 0};
 
@@ -50,7 +45,7 @@ const int PHYS_SAMPLING_STEP=10; // numero di millisec che un passo di fisica si
 const int fpsSampling = 3000; // lunghezza intervallo di calcolo fps
 float fps=0; // valore di fps dell'intervallo precedente
 int fpsNow=0; // quanti fotogrammi ho disegnato fin'ora nell'intervallo attuale
-Uint32 timeLastInterval=0; // quando e' cominciato l'ultimo intervallo
+unsigned int timeLastInterval=0; // quando e' cominciato l'ultimo intervallo
 
 
 
@@ -272,7 +267,7 @@ void DrawUI(){
     glLoadIdentity();
     glColor3f(1,1,1);
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, texProvider->indexOf("Resources/menu.png"));
+    glBindTexture(GL_TEXTURE_2D, texProvider->indexOf("Resources/menu.ppm"));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glBegin(GL_QUADS);  
@@ -502,6 +497,8 @@ void motionHandler(int x, int y) {
 
 void mouseHandler(int button, int state, int x, int y) {
 
+  // printf("%d\n", button);
+
   if (button == GLUT_LEFT_BUTTON && state==GLUT_DOWN && cameraType==CAMERA_MOUSE) {
             //start listening for motion
             glutMotionFunc(motionHandler);
@@ -540,11 +537,11 @@ int main(int argc, char* argv[])
   glutInitWindowSize( scrH, scrW );
 
   glutCreateWindow( "CG2018 Di Vincenzo" );
-  const GLubyte* renderer = glGetString (GL_RENDERER);
-  const GLubyte* version =  glGetString (GL_VERSION);
+  // const GLubyte* renderer = glGetString (GL_RENDERER);
+  // const GLubyte* version =  glGetString (GL_VERSION);
 
-  printf ("\n[DEBUG]\tRenderer: %s\n", renderer);
-  printf ("[DEBUG]\tOpenGL version supported: %s\n", version);
+  // printf ("\n[DEBUG]\tRenderer: %s\n", renderer);
+  // printf ("[DEBUG]\tOpenGL version supported: %s\n", version);
 
 
   world.BindBuffers(); // setup the buffers so that we don't need to resend all the geometry to the GPU when drawing the world 
@@ -567,26 +564,25 @@ int main(int argc, char* argv[])
   TextureProvider* texProvider = TextureProvider::getInstance();
   srand(time(NULL));
   
-  texProvider->LoadTexture("Resources/OLD/logo.jpg");
-  texProvider->LoadTexture("Resources/me.png");
-  texProvider->LoadTexture("Resources/wood.jpg");
-  texProvider->LoadTexture("Resources/parquet.jpg");
-  texProvider->LoadTexture("Resources/asphalt2.jpg");
-  texProvider->LoadTexture("Resources/text.png");
-  texProvider->LoadTexture("Resources/menu.png");
-  texProvider->LoadTexture("Resources/universe.jpg");
-  texProvider->LoadTexture("Resources/wall1.jpg");
-  texProvider->LoadTexture("Resources/wall2.jpg");
-  texProvider->LoadTexture("Resources/wall3.jpg");
-  texProvider->LoadTexture("Resources/wall4.jpg");
-  texProvider->LoadTexture("Resources/walldoor.jpg");
-  texProvider->LoadTexture("Resources/dice1.jpg");
-  texProvider->LoadTexture("Resources/dice2.jpg");
-  texProvider->LoadTexture("Resources/dice3.jpg");
-  texProvider->LoadTexture("Resources/dice4.jpg");
-  texProvider->LoadTexture("Resources/dice5.jpg");
-  texProvider->LoadTexture("Resources/carpet.jpg");
-  texProvider->LoadTexture("Resources/ball2.jpg");
+  texProvider->LoadTexture("Resources/logo.ppm");
+  texProvider->LoadTexture("Resources/me.ppm");
+  texProvider->LoadTexture("Resources/wood.ppm");
+  texProvider->LoadTexture("Resources/parquet.ppm");
+  texProvider->LoadTexture("Resources/asphalt2.ppm");
+  texProvider->LoadTexture("Resources/text.ppm");
+  texProvider->LoadTexture("Resources/menu.ppm");
+  texProvider->LoadTexture("Resources/universe.ppm");
+  texProvider->LoadTexture("Resources/wall1.ppm");
+  texProvider->LoadTexture("Resources/wall3.ppm");
+  texProvider->LoadTexture("Resources/wall4.ppm");
+  texProvider->LoadTexture("Resources/walldoor.ppm");
+  texProvider->LoadTexture("Resources/dice1.ppm");
+  texProvider->LoadTexture("Resources/dice2.ppm");
+  texProvider->LoadTexture("Resources/dice3.ppm");
+  texProvider->LoadTexture("Resources/dice4.ppm");
+  texProvider->LoadTexture("Resources/dice5.ppm");
+  texProvider->LoadTexture("Resources/carpet.ppm");
+  texProvider->LoadTexture("Resources/ball2.ppm");
 
   glutDisplayFunc(renderHandle);
 

@@ -21,7 +21,7 @@ extern bool useWireframe;
 
 extern Point3 player_position;
 extern std::string floor_texture;
-const std::vector<std::string> wall_textures = {"Resources/wall3.jpg", "Resources/wall4.jpg", "Resources/wall3.jpg", "Resources/wall2.jpg", "Resources/walldoor.jpg", "Resources/wall1.jpg"};
+const std::vector<std::string> wall_textures = {"Resources/wall3.ppm", "Resources/wall4.ppm", "Resources/wall3.ppm", "Resources/wall3.ppm", "Resources/walldoor.ppm", "Resources/wall1.ppm"};
 
 //sort by most distant from player
 bool tileCompare(Tile* a, Tile* b) {
@@ -157,15 +157,20 @@ class World {
             obstacle3->Translate(48, 0.1, 0);
             
 
-            SphereTile* sphere = new SphereTile((char*) "./Resources/sphere.obj", "Resources/universe.jpg", 0.5);
+            SphereTile* sphere = new SphereTile((char*) "./Resources/sphere.obj", "Resources/universe.ppm", 0.5);
             sphere->Scale(2, 2, 2);
             sphere->Rotate(90);
             sphere->Translate(-19, 2, 30);
 
-            SphereTile* sphere2 = new SphereTile((char*) "./Resources/sphere.obj", "Resources/ball2.jpg");
+            SphereTile* sphere2 = new SphereTile((char*) "./Resources/sphere.obj", "Resources/ball2.ppm");
             sphere2->Scale(2, 2, 2);
             sphere2->Rotate(90);
             sphere2->Translate(19, 2, -19);
+
+            SphereTile* sphere3 = new SphereTile((char*) "./Resources/sphere.obj", "Resources/ball2.ppm", -0.5);
+            sphere3->Scale(2, 2, 2);
+            sphere3->Rotate(90);
+            sphere3->Translate(-39, 2, -35);
 
 
             CubeTile* cube = new CubeTile((char*) "./Resources/cube.obj");
@@ -180,9 +185,9 @@ class World {
 
             WhirligigTile* whirl = new WhirligigTile((char*) "./Resources/whirligig.obj");
             whirl->Scale(1.5, 1.5, 1.5);
-            whirl->Translate(-30, 0, -40);
+            whirl->Translate(-30, 0, -45);
 
-            FlatTile* carpet = new FlatTile((char*) "./Resources/flattile.obj", "Resources/carpet.jpg");
+            FlatTile* carpet = new FlatTile((char*) "./Resources/flattile.obj", "Resources/carpet.ppm");
             carpet->Scale(27, 1, 16.16);
             carpet->Translate(0, 0.1, -75);
 
@@ -195,6 +200,7 @@ class World {
             tiles.push_back(carpet);
             tiles.push_back(sphere);
             tiles.push_back(sphere2);
+            tiles.push_back(sphere3);
 
             // for (auto tile : tiles) {
             //     for (float f : tile->model.Flat_Vertices()) {

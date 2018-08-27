@@ -6,7 +6,6 @@
 Questo progetto è stato realizzato in **C++** (standard 11) con 
 - **OpenGL** (2.1+)
 - **GLUT / FreeGLUT**
-- **SDL_Image** (per il solo caricamento di textures)
 
 E' stato realizzato e testato su **MacOS 10.12**, ma *dovrebbe* funzionare ugualmente anche su versioni più recenti (ammesso che i framework richiesti si trovino nelle posizioni di default).
 
@@ -38,14 +37,14 @@ La scena è ambientata nella stanza di un bambino, con il pavimento, in finissim
 Al giocatore è delegato il controllo di una moto giocattolo, alla cui guida si trova un soldatino, altrettanto giocattolo, con le fattezze dell'autore (ossia la faccia, giustamente turbata e perplessa dalla situazione).
 La moto e il soldatino possono compiere alcune evoluzioni saltando su rampe e muovendosi liberamente nell'ambiente. L'unica regola è il cercare di non schiantarsi sui muri e sui vari oggetti presenti nella scena (nel qual caso, il gioco finisce). Si ignorino le evidenti violazioni del codice della strada e il casco non adeguatamente allacciato.
 
-![screen shot](Resources/screen.png)
+![L'immagine non è aggiornata.](Resources/screen.png)
 
 Nella stanza, si trovano:
 * dei **dadi**, che non hanno particolari meriti se non il mostrare qualche texture sulle facce
 * delle **biglie** in movimento, che possono diventare *trasparenti* all'occorrenza (ed essere fermate onde evitare di rimanere schiacciati).
 * delle **rampe** di forma varia, su cui la moto può ragionevolmente salire, in legno
 * una **trottola**, tratta dal film *"Inception"*
-* un **tappeto**, liberamente ispirato dall'infanzia dell'autore, che oltre a mostrare un'opportuna texture, limita i movimenti della moto fornendo attrito superiore.
+* un **tappeto**, liberamente ispirato all'infanzia dell'autore, che oltre a mostrare un'opportuna texture, limita i movimenti della moto fornendo attrito superiore.
 
 
 
@@ -181,7 +180,7 @@ Questa pratica, altamente sconsigliata, è stata perseguita ugualmente per due r
 * La fisica degli oggetti è talmente semplice e banale che non ha impatto sensibile sulle performance (in pratica, qualche rotazione)
 * I FPS in generale sono abbastanza stabili, rendendo di conseguenza stabile la fisica.
 
-In estrema sintesi, non si è ritenuto valesse la pena aggiornare i pochi valori della fisica in funzioni separata dalla resa grafica.
+In estrema sintesi, non si è ritenuto valesse la pena aggiornare i pochi valori della fisica in funzioni separate dalla resa grafica.
 
 -----
 
@@ -190,17 +189,17 @@ La UI è stata disegnata per avere il minimo impatto sulle perfomance. In partic
 
 Per quanto riguarda il menù comandi, si è optato per una realizzazione "offline". Infatti, è mostrato come semplice texture applicata ad un opportuno ```quad```.
 
-Al contrario, la minimappa, è stata oggetto di svariate iterazioni.
+Al contrario, la **minimappa**, è stata oggetto di svariate iterazioni.
 All'inizio si era pensato di fissare una camera perpendicolare al suolo, che inquadri dall'alto la moto e di disegnare in una piccola finestra di nuovo tutta la scena. Questa idea è stata scartata perché disegnare due volte tutta la scena è pesante sulle performance, specie in virtù del fatto che non si sono realizzate ottimizzazioni come il *frustum culling*. Quindi, si è inizialmente optato per il disegnare una semplice texture con un marcatore (dinamico) a mostrare la moto. Quest'idea è stata revisionata quando sono stati introdotti oggetti in movimento. A quel punto, il numero di marcatori ha cominciato a salire e, per uniformità, si è deciso di disegnare dinamicamente ogni oggetto, o con dei cerchi o con dei semplici rettangoli.
-La realizzazione ha attraversato varie fasi, di cui si omettono i dettagli (come rabbia, disperazione e depressione). In pratica, il problema principale è relativamente semplice: 
-> passare da una rappresentazione in "coordinate mondo" a una rappresentazione in semplici "coordinate quad" 2D.
+La realizzazione ha attraversato varie fasi (come rabbia, disperazione e depressione) delle quali si omettono i dettagli. In pratica, il problema principale è relativamente semplice: 
+> passare da una rappresentazione in "coordinate mondo" (3D) a una rappresentazione in semplici "coordinate quad" (2D).
 
-Questo problema, si sapeva, che **ha sicuramente** soluzione esprimibile con una serie di rotazioni e traslazioni (o con un solo prodotto matriciale, di opportuna matrice). La difficoltà è stata puramente realizzativa e legata ad alcune peculiarità del progetto e di OpenGL, tra le quali:
+Questo problema, come si sa bene, **ha sicuramente** soluzione esprimibile con una serie di semplici traslazioni, rotazioni e scale (o con un solo prodotto matriciale, di opportuna matrice). La difficoltà è stata puramente realizzativa e legata ad alcune peculiarità del progetto e di OpenGL, tra le quali:
 * il fatto che nel progetto "andare avanti" significa muoversi verso Z decrescenti (ereditato da ```car4``` in toto con i controlli del movimento)
 * il fatto che OpenGL, quando lavora in 2D, lavori su un piano di coordinate XY; probabilmente intuitivo ma facilmente dimenticato mentre si cerca di mappare un piano XZ
 * il fatto che la direzione di moto non sempre coincida con la direzione in cui si sta guardando né con la direzione in cui si sta accelerando.
 
-Una volta fatto pace con queste osservazioni, il problema è, per l'appunto relativamente semplice, tuttavia si son dovute operare delle decisioni. Si è deciso di:
+Una volta fatto pace con queste osservazioni, il problema è, per l'appunto relativamente semplice, tuttavia si son dovute operare delle decisioni. In particolare, si è deciso di:
 1. Realizzare la mappa con il marcatore della moto **fisso al centro** (e che siano gli altri marcatori a spostarsi)
 2. Far sì che il marcatore della moto punti sempre verso la **direzione di moto** e non la direzione in cui si sta guardando. Questo può risultare in una navigazione non sempre intuitiva, ma sicuramente più stabile di altre scelte.
 
@@ -212,7 +211,7 @@ Infine, la barra laterale che mostra un feedback visivo della velocità è **amp
 -----
 
 ## **Il codice** e la sua (non) organizzazione
-Anzitutto, occorre specificare che l'autore non è particolarmente famoso come autore di buon codice C++ e che, tra altri difetti, annovera anche la predilezione per codice "single header", ossia in cui sia la dichiarazione di classi che la loro implementazione risiede in un singolo header file. Questa abitudine, nata più che altro da esigenze assolutamente irrilevanti in questo progetto, porta all'esistenza di un singolo ```.cpp``` file in tutto il progetto (il main) e a molti (e lunghi) headers.
+Anzitutto, occorre specificare che l'autore non è particolarmente famoso come autore di buon codice C++ e che, tra altri difetti, annovera anche la predilezione per codice "single header", ossia codice in cui sia la dichiarazione di classi che la loro implementazione risiede in un singolo header file. Questa abitudine, nata più che altro da esigenze assolutamente irrilevanti in questo progetto, porta all'esistenza di un singolo ```.cpp``` file in tutto il progetto (il main) e a molti (e lunghi) headers.
 
 Molte parti del codice partono da ```Car4``` per poi prendere la propria (tumultuosa) strada.
 
@@ -235,21 +234,21 @@ Questo è probabilmente l'unico file con una parvenza di struttura e logica. In 
 Il file ```vehicles.h```, si occupa di gestire la moto. L'header è titolato al plurale perché nasce come generalizzazione del già esistente ```car.h``` (di ```Car4```). Ai fini dello sviluppo e del testing, si è trovato comodo a un certo punto avere a disposizione un'interfaccia generica sia per la macchina che per la moto, così da poterli usare indifferentemente, in modo da differenziare i problemi legati alla grafica da quelli legati alla povertà del codice. A progetto concluso, si è deciso di mantenere l'interfaccia generica al fine di facilitare un ipotetico riuso in un (remoto) futuro.
 
 Come si può facilmente supporre, di vitale importanza è il file ```tiles.h```, che definisce e racchiude tutte le varie ```tile```.
-Queste sono strutturate secondo una tassonomia (non particolarmente utile) che vede in cima una classe astratta ```Tile```. Questa definisce tutti i metodi necessari alle varie sottoclassi, implementandone la maggior parte in maniera basilare. In particolare implementa una versione base del metodo ```Draw()```. Le sottoclassi con esigenze speciali (come le biglie, che diventano trasparenti all'occorrenza), devono ridefinirlo mentre altre classi (come le varie rampe) che invece non hanno effetti speciali, richiedono solo minimo lavoro su altri metodi. 
+Queste sono strutturate secondo una tassonomia (non particolarmente utile) che vede in cima una classe astratta ```Tile```. Questa definisce tutti i metodi necessari alle varie sottoclassi, implementandone la maggior parte in maniera basilare. In particolare implementa una versione base del metodo ```Draw()``` e il suo "fratello minore" ```DrawMiniMarker()```, per la resa in minimappa. Le sottoclassi con esigenze speciali (come le biglie, che diventano trasparenti all'occorrenza), devono ridefinire il metodo di rendering mentre altre classi (come le varie rampe) che invece non hanno effetti speciali, richiedono solo minimo lavoro su altri metodi. 
 
-Ogni tile deve necessariamente specificare come calcolare l'altezza e la normale nei suoi punti. Per quanto questo fosse teoricamente possibile in praticamente tutte le ```tile``` (magari con la sola eccezione della trottola, data la sua forma particolare), si è scelto di semplificare vari calcoli per le tile in cui non sia possibile (fisicamente) salire in nessun modo (e.g. le biglie, i cubi). Per queste tile, si è scelto di ritornare un valore fisso molto alto per l'altezza in modo che a qualsiasi contatto, la moto venga distrutta. Infine, ogni ```tile``` può specificare una serie di altri parametri utili per il rendering o per la sua animazione, come velocità, attrito della moto su di essa e altri. Il meccanismo con cui le tile interano con la moto è sempre lo stesso: si trova la tile di interesse e si accede al parametro voluto. Si ha avuto cura di marcare tutti gli accessor e i metodi di calcolo come ```inline``` (per efficienza).
+Ogni tile deve necessariamente specificare come calcolare l'altezza e la normale nei suoi punti. Per quanto questo fosse teoricamente possibile in praticamente tutte le ```tile``` (magari con la sola eccezione della trottola, data la sua forma particolare), si è scelto di semplificare vari calcoli per le tile in cui non sia possibile (fisicamente) salire in nessun modo (e.g. le biglie, i cubi). Per queste tile, si è scelto di ritornare un valore fisso molto alto per l'altezza in modo che a qualsiasi contatto, la moto venga distrutta. Infine, ogni ```tile``` può specificare una serie di altri parametri utili per il rendering o per la sua animazione, come velocità, attrito della moto su di essa e altri. Il meccanismo con cui le tile interano con la moto è sempre lo stesso: si trova la tile di interesse e si accede al parametro voluto. Si ha avuto cura di marcare tutti gli accessor e i metodi di calcolo come ```inline``` per eliminare l'overhead dettato dal cambio di contesto.
 
-Il file ```utils.h``` riassume vari metodi di utilità per la gestione delle textures e il disegno di cubi/quads. In particolare, dato l'elevato numero di texture presenti nel progetto, usando i soli bindings OpenGL nella forma ```glBindTexture(GL_TEXTURE_2D, 6)```, era facile perdere di vista la corrispondenza "numero - texture".
-Per questo si è realizzata la classe ```TextureProvider```, un *singleton* (classe di cui esiste una sola istanza nel codice) che offra un punto di accesso centralizzato alle texture, e che permetta di essere più chiari, a colpo d'occhio, riguardo a quale texture si stia usando (e.g.: ```provider->BindTexture(GL_TEXTURE_2D, "Resources/wood.jpg")```).
+Il file ```utils.h``` riassume vari metodi di utilità per la gestione delle textures e il disegno di cubi, quads e cerchi. In particolare, dato l'elevato numero di texture presenti nel progetto, usando i soli bindings OpenGL nella forma ```glBindTexture(GL_TEXTURE_2D, 6)```, era facile perdere di vista la corrispondenza "numero - texture".
+Per questo si è realizzata la classe ```TextureProvider```, un *singleton* (classe di cui esiste una sola istanza nel codice) che offra un punto di accesso centralizzato alle texture, e che permetta di essere più chiari, a colpo d'occhio, riguardo a quale texture si stia usando (e.g.: ```provider -> BindTexture(GL_TEXTURE_2D, "Resources/wood.jpg")```).
 Questa classe è anche usata per caricare le texture, fornendo quindi un punto unico di gestione degli errori e quindi la possibilità di fornire messaggi più mirati in caso di fallimento.
 
-Infine, ```common.h``` è un file praticamente copiato e incollato da esempi mostrati a lezione. Esso contiene altre varianti della geometria e varie funzioni utilità per l'uso di shaders (che tuttavia non sono impiegati nel progetto). E' tenuto più come "porta fortuna" che per reale utilità. Vi sono state definite varie costanti e parametri usati altrove nel progetto e usato come base di "normalizzazione" delle librerie grafiche importate, in modo che tutti gli altri header restino coerenti.
+Infine, ```common.h``` è un file praticamente copiato e incollato da esempi mostrati a lezione. Esso contiene altre varianti della geometria e varie funzioni utilità per l'uso di shaders (che tuttavia non sono impiegati nel progetto). E' tenuto più come "porta fortuna" che per reale utilità. Vi sono state definite varie costanti e parametri usati altrove nel progetto e usato come base di "normalizzazione" delle librerie grafiche importate, in modo che, anche cambiando librerie, tutti gli altri header restino coerenti.
 
 
 ----
 
 ## **Potenziali problemi**
-1. Uso prolungato (15+ minuti, variabile con la temperatura atmosferica) può causare *surriscaldamento* del PC. Questo è dovuto a una serie di scelte e comportamenti adottati che sacrificano un sano uso di risorse sull'altare dei FPS. In particolare, si è scelto di *non attendere* il completamento delle operazioni di resa di un frame prima di iniziare a lavorare sul successivo (ossia, nessuna chiamata ```glFinish()```). Questo non causa nessun difetto (apparente) nella resa, ma priva la GPU di momenti in cui la pipeline è inattiva; in altre parole, si priva la GPU di importanti momenti per raffreddarsi, provocando, alla lunga, probabile surriscaldamento.
+1. Uso prolungato (15+ minuti, variabile con la temperatura atmosferica e l'hardware particolare) può causare *surriscaldamento* del PC. Questo è dovuto a una serie di scelte e comportamenti adottati che sacrificano un sano uso di risorse sull'altare dei FPS. In particolare, si è scelto di *non attendere* il completamento delle operazioni di resa di un frame prima di iniziare a lavorare sul successivo (ossia, nessuna chiamata ```glFinish()```). Questo non causa nessun difetto (apparente) nella resa, ma priva la GPU di momenti in cui la pipeline è inattiva; in altre parole, si priva la GPU di importanti momenti per raffreddarsi, provocando, alla lunga, probabile surriscaldamento.
 
 > In sintesi, sebbene lo scopo del gioco sia non far morire il soldatino, si consiglia di terminare la sua esistenza entro 15-20 minuti.
 

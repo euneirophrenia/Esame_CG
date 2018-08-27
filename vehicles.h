@@ -147,7 +147,7 @@ class MotorBike : public Vehicle {
                 glTranslate( -front_wheel->Center());
                 if (usecolor){
                     glColor3f(.6,.6,.6);
-                    texProvider->SetupAutoTexture2D("Resources/asphalt2.jpg", front_wheel->bbmin, front_wheel->bbmax);
+                    texProvider->SetupAutoTexture2D("Resources/asphalt2.ppm", front_wheel->bbmin, front_wheel->bbmax);
                     glColor3f(0.9,0.9,0.9);
                 }
                 front_wheel->RenderNxF();
@@ -161,7 +161,7 @@ class MotorBike : public Vehicle {
 
                 if (usecolor) {
                     glColor3f(.6,.6,.6);
-                    texProvider->SetupAutoTexture2D("Resources/asphalt2.jpg", back_wheel->bbmin, back_wheel->bbmax);
+                    texProvider->SetupAutoTexture2D("Resources/asphalt2.ppm", back_wheel->bbmin, back_wheel->bbmax);
                     glColor3f(0.9,0.9,0.9);
                 }
                 back_wheel->RenderNxV();
@@ -176,7 +176,7 @@ class MotorBike : public Vehicle {
             carlinga->RenderArray(); // rendering delle mesh carlinga usando normali per vertice
             if (usecolor) {
                 glColor3f(1,1,1);
-                texProvider->SetupAutoTexture2D("Resources/text.png", plate->bbmin, plate->bbmax);
+                texProvider->SetupAutoTexture2D("Resources/text.ppm", plate->bbmin, plate->bbmax);
             }
             plate->RenderNxF();
             glDisable(GL_TEXTURE_2D);
@@ -198,7 +198,7 @@ class MotorBike : public Vehicle {
                 glColor3f(1,1,1);
                 //don't bother using the face texture if nobody can see it
                 if (cameraType == CAMERA_FRONT || cameraType == CAMERA_MOUSE)
-                    texProvider->SetupAutoTexture2D("Resources/me.png", face->bbmin, face->bbmax, GL_OBJECT_LINEAR);
+                    texProvider->SetupAutoTexture2D("Resources/me.ppm", face->bbmin, face->bbmax, GL_OBJECT_LINEAR);
                 else 
                     glColor3f(HEAD_HACK.X(), HEAD_HACK.Y(), HEAD_HACK.Z());
             }

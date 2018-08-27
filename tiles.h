@@ -84,7 +84,7 @@ class Tile {
                     point.Z() <= max.Z() && point.Z() >= min.Z();
         }
 
-        explicit Tile(char* model_path, std::string texture = "Resources/wood.jpg") {
+        explicit Tile(char* model_path, std::string texture = "Resources/wood.ppm") {
             model.Init(model_path);
             center.coord[0]=0;
             center.coord[1]=0;
@@ -297,7 +297,7 @@ class SphereTile : public Tile {
         }
 
     public:
-        explicit SphereTile(char* filename, std::string texture = "Resources/universe.jpg", float v = 0.1) : Tile(filename, texture) {
+        explicit SphereTile(char* filename, std::string texture = "Resources/universe.ppm", float v = 0.1) : Tile(filename, texture) {
             velocity = v;
             becomesTransparent = true;
         }
@@ -373,10 +373,10 @@ class CubeTile : public Tile {
 
     public:
         explicit CubeTile(char* filename) : Tile(filename) {
-            textureName = "Resources/OLD/logo.jpg";
+            textureName = "Resources/logo.ppm";
             textures.push_back(textureName);
             for (int k=1; k<6;k++)
-                textures.push_back("Resources/dice" + std::to_string(k) + ".jpg");
+                textures.push_back("Resources/dice" + std::to_string(k) + ".ppm");
 
         }
         float height_at(Point3 point) {
@@ -479,7 +479,7 @@ class WhirligigTile : public Tile {
         }
 
         explicit WhirligigTile(char* filename) : Tile(filename) {
-            textureName = "Resources/metal.jpg";
+            textureName = "Resources/metal.ppm";
         }
 
         virtual void Draw() {

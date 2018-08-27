@@ -13,19 +13,19 @@ ifeq ($(OS),Darwin)
 ## caso Mac OS
 $(info Mac OS detected)
 FRMPATH=-F /Library/Frameworks
-LIBS =  -framework OpenGL -framework GLUT -framework SDL2_image -lm
+LIBS =  -framework OpenGL -framework GLUT -lm
 $(info GLUT libraries must be in: $(FRMPATH))
 else
 ifeq ($(OS),MINGW32_NT-6.1)
 ## caso Windows MinGW
 $(info Windows MinGW detected)
 FRMPATH = -IC:\MinGW\freeglut\include
-LDFLAGS = -LC:\MinGW\freeglut\lib -lfreeglut -LC:\MinGW\lib -lmingw32 -lopengl32 -lglu32 -lSDL2_image -lm
+LDFLAGS = -LC:\MinGW\freeglut\lib -lfreeglut -LC:\MinGW\lib -lmingw32 -lopengl32 -lglu32 -lm
 else
 ##caso Linux
 $(info Linux detected)
 FRMPATH=
-LDFLAGS = -lGL -lGLU -lglut -lSDL2_image -lm
+LDFLAGS = -lGL -lGLU -lglut -lm
 endif
 endif
 
