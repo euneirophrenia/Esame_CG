@@ -21,7 +21,18 @@ extern bool useWireframe;
 
 extern Point3 player_position;
 extern std::string floor_texture;
-const std::vector<std::string> wall_textures = {"Resources/wall3.ppm", "Resources/wall4.ppm", "Resources/wall3.ppm", "Resources/wall3.ppm", "Resources/walldoor.ppm", "Resources/wall1.ppm"};
+const std::vector<std::string> wall_textures = {
+    "Resources/wall3.ppm", 
+    "Resources/wall4.ppm", 
+    "Resources/wall3.ppm", 
+    "Resources/wall3.ppm", 
+    "Resources/walldoor.ppm", 
+    "Resources/wall1.ppm"
+    };
+
+
+const int K = 150; //sqrt of the number of tassels in the floor
+const float factor = K*K / (ROOM_SIZE*ROOM_SIZE);
 
 //sort by most distant from player
 bool tileCompare(Tile* a, Tile* b) {
@@ -37,83 +48,51 @@ class World {
         std::vector<Tile*> tiles;
         std::vector<float> vertices;
 
-        void drawSphere(double r, int lats, int longs) {
-            int i, j;
-            for(i = 0; i <= lats; i++) {
-                double lat0 = M_PI * (-0.5 + (double) (i - 1) / lats);
-                double z0  = sin(lat0);
-                double zr0 =  cos(lat0);
-            
-                double lat1 = M_PI * (-0.5 + (double) i / lats);
-                double z1 = sin(lat1);
-                double zr1 = cos(lat1);
-                
-                glBegin(GL_QUAD_STRIP);
-                for(j = 0; j <= longs; j++) {
-                    double lng = 2 * M_PI * (double) (j - 1) / longs;
-                    double x = cos(lng);
-                    double y = sin(lng);
-                
-            //le normali servono per l'EnvMap
-                    glNormal3f(x * zr0, y * zr0, z0);
-                    glVertex3f(r * x * zr0, r * y * zr0, r * z0);
-                    glNormal3f(x * zr1, y * zr1, z1);
-                    glVertex3f(r * x * zr1, r * y * zr1, r * z1);
-                }
-                glEnd();
-            }
-        }
-
-        void drawFloor() {
-
-            const float S=ROOM_SIZE; // size
-            const float H=0;   // altezza
-            const int K=100; //disegna K x K quads
-            
-            /*
-            //vecchio codice ora commentato
-            // disegna un quad solo 
-            glBegin(GL_QUADS);
-                glColor3f(0.5, 0.2, 0.0);
-                glNormal3f(0,1,0);
-                glVertex3d(-S, H, -S);
-                glVertex3d(+S, H, -S);
-                glVertex3d(+S, H, +S);
-                glVertex3d(-S, H, +S);
-            glEnd();
-            */
-            
-            // disegna KxK quads
+        inline void drawFloor() {  
+   
             if (!useWireframe) {
-                // SetupEnvmapTexture(texProvider->indexOf(floor_texture), GL_OBJECT_LINEAR);
-                texProvider->SetupAutoTexture2D(floor_texture, Point3(S*0.5/K, 0, S*0.5/K), Point3(-S*0.5/K, 0, -S*0.5/K), GL_OBJECT_LINEAR);
                 glEnable(GL_LIGHTING);
-                //glColor3f(0.7, 0.7, 0.7);
-
+                glNormal3f(0, 1, 0);
+                glEnable(GL_TEXTURE_2D);
+                glBindTexture(GL_TEXTURE_2D, texProvider->indexOf(floor_texture));
+                for (int x=0; x < K; x++) {
+                    for (int z=0; z< K; z++) {
+                        glBegin(GL_QUADS);
+                            float x0=-ROOM_SIZE + 2*(x+0)*ROOM_SIZE/K;
+                            float x1=-ROOM_SIZE + 2*(x+1)*ROOM_SIZE/K;
+                            float z0=-ROOM_SIZE + 2*(z+0)*ROOM_SIZE/K;
+                            float z1=-ROOM_SIZE + 2*(z+1)*ROOM_SIZE/K;
+                            glTexCoord2d(0, 0); glVertex3d(x0, 0, z0);
+                            glTexCoord2d(0, factor); glVertex3d(x1, 0, z0);
+                            glTexCoord2d(factor, factor); glVertex3d(x1, 0, z1);
+                            glTexCoord2d(factor, 0); glVertex3d(x0, 0, z1);
+                        glEnd();
+                    }
+                }
+            }  
+            else {
+                glNormal3f(0, 1, 0);
+                glColor3f(0.6, 0.6, 0.6);
+                for (int x=0; x < K; x++) {
+                    for (int z=0; z< K; z++) {
+                        glBegin(GL_QUADS);
+                            float x0=-ROOM_SIZE + 2*(x+0)*ROOM_SIZE/K;
+                            float x1=-ROOM_SIZE + 2*(x+1)*ROOM_SIZE/K;
+                            float z0=-ROOM_SIZE + 2*(z+0)*ROOM_SIZE/K;
+                            float z1=-ROOM_SIZE + 2*(z+1)*ROOM_SIZE/K;
+                            glVertex3d(x0, 0, z0);
+                            glVertex3d(x1, 0, z0);
+                            glVertex3d(x1, 0, z1);
+                            glVertex3d(x0, 0, z1);
+                        glEnd();
+                    }
+                }
             }
 
-            glBegin(GL_QUADS);
-                glColor3f(1, 1, 1);
-                glNormal3f(0,1,0);       // normale verticale uguale x tutti
-                
-                for (int x=0; x<K; x++) 
-                    for (int z=0; z<K; z++) {
-                        float x0=-S + 2*(x+0)*S/K;
-                        float x1=-S + 2*(x+1)*S/K;
-                        float z0=-S + 2*(z+0)*S/K;
-                        float z1=-S + 2*(z+1)*S/K;
-                        glVertex3d(x0, H, z0);
-                        glVertex3d(x1, H, z0);
-                        glVertex3d(x1, H, z1);
-                        glVertex3d(x0, H, z1);
-                    }
-            glEnd();
             glDisable(GL_TEXTURE_2D);
-            glDisable(GL_TEXTURE_GEN_S);
-            glDisable(GL_TEXTURE_GEN_T);
         }
 
-        void drawSky() {
+        inline void drawSky() {
             int H = ROOM_SIZE;
 
             if (useWireframe) {

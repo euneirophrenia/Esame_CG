@@ -1,4 +1,5 @@
-CPP  = g++
+CPP  = g++ 
+#CPP = icpc
 CC   = gcc
 BIN  = CG2018_DiVincenzo
 
@@ -32,7 +33,7 @@ endif
 LDFLAGS=$(LDFLAGS) "-L./Geometry"  "-L./Glew"
 CFLAGS=$(CFLAGS) "-I./Geometry" "-I./Glew"
 
-FLAG =-Wno-deprecated
+FLAG =-Wno-deprecated -O3
 RM = rm -f
 
 all: $(BIN)

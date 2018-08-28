@@ -86,7 +86,7 @@ void SetupTexture(int texture, Point3 min, Point3 max, GLuint mode = GL_OBJECT_L
   glTexGenfv(GL_T, GL_OBJECT_PLANE, t); 
 }
 
-void DrawText(int width, int height, std::string text, Vector3 color = LIGHT_GREEN) {
+inline void DrawText(int width, int height, std::string text, Vector3 color = LIGHT_GREEN) {
   glMatrixMode(GL_PROJECTION);
   glPushMatrix();
   glLoadIdentity();

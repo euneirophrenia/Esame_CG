@@ -52,7 +52,7 @@ unsigned int timeLastInterval=0; // quando e' cominciato l'ultimo intervallo
 // setta le matrici di trasformazione in modo
 // che le coordinate in spazio oggetto siano le coord 
 // del pixel sullo schemo
-void  SetCoordToPixel(){
+inline void  SetCoordToPixel(){
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glMatrixMode(GL_MODELVIEW);
@@ -94,7 +94,7 @@ void drawAxis(){
 
 
 // setto la posizione della camera
-void setCamera(){
+inline void setCamera(){
 
         double px = bike.px;
         double py = bike.py;
@@ -238,7 +238,7 @@ void DrawMiniMap() {
 }
 
 // Draw text and other infos
-void DrawUI(){
+inline void DrawUI(){
 
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_LIGHTING);

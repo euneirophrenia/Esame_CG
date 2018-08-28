@@ -64,12 +64,12 @@ bool LoadPPM(int bind, std::string filename) {
     if (texture == NULL)
         return false;
     
-    gluBuild2DMipmaps( GL_TEXTURE_2D, 3, w, h,
-                    GL_RGB, GL_UNSIGNED_BYTE, texture );
+    gluBuild2DMipmaps( GL_TEXTURE_2D, 3, w, h, GL_RGB, GL_UNSIGNED_BYTE, texture );
     free( texture );
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR ); 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR ); 
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     glDisable( GL_TEXTURE_2D );
     return true;
 }

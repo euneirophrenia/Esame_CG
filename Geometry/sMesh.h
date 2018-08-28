@@ -104,7 +104,7 @@ class sMesh {
         
         }
 
-        void RenderArray() {
+        inline void RenderArray() {
             glEnableClientState(GL_NORMAL_ARRAY);
         
             glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);

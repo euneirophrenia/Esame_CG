@@ -12,6 +12,7 @@ extern int cameraType;
 
 const Vector3 SOLDIER_GREEN(31.0/255, 112.0/255, 73.0/255);
 const Vector3 HEAD_HACK(38/255.0f, 25/255.0f, 16/255.0f);
+const float light_dir[] {0, 0, -1, 0};
 
 extern TextureProvider* texProvider;
 
@@ -22,7 +23,7 @@ class Vehicle {
         /// invocato due volte: per la car e la sua ombra
         virtual void RenderAllParts(bool usecolor) = 0;
         virtual void Init() = 0;
-        float current_ground_level =0;
+        float current_ground_level = 0;
 
         void DrawHeadlight(float x, float y, float z, int lightN, bool useHeadlight) {
             int usedLight=GL_LIGHT1 + lightN;
@@ -34,20 +35,19 @@ class Vehicle {
                 //float col0[4]= {0.8, 0.8,0.0,  1};
                 glLightfv(usedLight, GL_DIFFUSE, FOUR_1);
                 
-                float col1[4]= {0.5,0.5,0.0,  1};
-                glLightfv(usedLight, GL_AMBIENT, col1);
+                //float col1[4]= {0.5,0.5,0.0,  1};
+                glLightfv(usedLight, GL_AMBIENT, FOUR_1);
                 
                 float tmpPos[4] = {x,y,z,  1}; // ultima comp=1 => luce posizionale
                 glLightfv(usedLight, GL_POSITION, tmpPos );
                 
-                float tmpDir[4] = {0,0,-1,  0}; // ultima comp=1 => luce posizionale
-                glLightfv(usedLight, GL_SPOT_DIRECTION, tmpDir );
+                glLightfv(usedLight, GL_SPOT_DIRECTION, light_dir );
                 
                 glLightf (usedLight, GL_SPOT_CUTOFF, 30);
-                glLightf (usedLight, GL_SPOT_EXPONENT, 5);
+                glLightf (usedLight, GL_SPOT_EXPONENT, 1);
                 
                 glLightf(usedLight,GL_CONSTANT_ATTENUATION, 0);
-                glLightf(usedLight,GL_LINEAR_ATTENUATION, 0.6);
+                glLightf(usedLight,GL_LINEAR_ATTENUATION, 1);
             }
             else
                 glDisable(usedLight);
@@ -130,7 +130,7 @@ class MotorBike : public Vehicle {
         sMesh* helmet = new sMesh((char*) "./Resources/Bike/helmet2.obj");
         
 
-        void RenderAllParts(bool usecolor) {
+        inline void RenderAllParts(bool usecolor) {
             // disegna la carliga con una mesh
             glPushMatrix();
             glScalef(4, 4, 4);
@@ -150,7 +150,7 @@ class MotorBike : public Vehicle {
                     texProvider->SetupAutoTexture2D("Resources/asphalt2.ppm", front_wheel->bbmin, front_wheel->bbmax);
                     glColor3f(0.9,0.9,0.9);
                 }
-                front_wheel->RenderNxF();
+                front_wheel->RenderArray();
                 glDisable(GL_TEXTURE_2D);
             glPopMatrix();
 
@@ -164,7 +164,7 @@ class MotorBike : public Vehicle {
                     texProvider->SetupAutoTexture2D("Resources/asphalt2.ppm", back_wheel->bbmin, back_wheel->bbmax);
                     glColor3f(0.9,0.9,0.9);
                 }
-                back_wheel->RenderNxV();
+                back_wheel->RenderArray();
                 glDisable(GL_TEXTURE_2D);
             glPopMatrix();
 
@@ -274,9 +274,9 @@ class MotorBike : public Vehicle {
         }
 
         void BindBuffers() {
-            back_wheel->BindBuffers(GL_DYNAMIC_DRAW);
-            front_wheel->BindBuffers(GL_DYNAMIC_DRAW);
-            carlinga->BindBuffers(GL_DYNAMIC_DRAW);
+            back_wheel->BindBuffers(GL_STATIC_DRAW);
+            front_wheel->BindBuffers(GL_STATIC_DRAW);
+            carlinga->BindBuffers(GL_STATIC_DRAW);
             pilot->BindBuffers(GL_STATIC_DRAW);
             face->BindBuffers(GL_STATIC_DRAW);
             plate->BindBuffers(GL_STATIC_DRAW);
