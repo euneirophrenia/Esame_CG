@@ -40,7 +40,7 @@ Point3 player_position; // #hacks
 
 
 int nstep=0; // numero di passi di FISICA fatti fin'ora
-const int PHYS_SAMPLING_STEP=10; // numero di millisec che un passo di fisica simula
+const int PHYS_SAMPLING_STEP = 10; // numero di millisec che un passo di fisica simula
 
 // Frames Per Seconds
 const int fpsSampling = 3000; // lunghezza intervallo di calcolo fps
@@ -194,13 +194,6 @@ void DrawMiniMap() {
   glLoadIdentity();
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  // glColor3f(0.8, 0.8, 0.8);
-  // glBegin(GL_QUADS); 
-  //   glVertex2d(1, 0);
-  //   glVertex2d(1, 1);
-  //   glVertex2d(0, 1);
-  //   glVertex2d(0, 0);
-  // glEnd();
 
   glPushMatrix();
     glColor3f(0, 1, 0);
@@ -305,7 +298,7 @@ inline void DrawUI(){
 }
 
 /* Esegue il Rendering della scena */
-void rendering(bool drawUI=true){
+inline void rendering(bool drawUI=true){
   
   // un frame in piu'!!!
   fpsNow++;
@@ -334,21 +327,12 @@ void rendering(bool drawUI=true){
   // riempe tutto lo screen buffer di pixel color sfondo
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-  //drawAxis(); // disegna assi frame VISTA
   
   // setto la posizione luce
   static float tmpv[4] = {0, 1, 2,  0}; // ultima comp=0 => luce direzionale
   glLightfv(GL_LIGHT0, GL_POSITION, tmpv );
 
-  
-  // settiamo matrice di vista
-  //glTranslatef(0,0,-eyeDist);
-  //glRotatef(viewBeta,  1,0,0);
-  //glRotatef(viewAlpha, 0,1,0);
   setCamera();
-
-  
-  //drawAxis(); // disegna assi frame MONDO
 
   static float tmpcol[4] = {0.5, 0.5, 0.5,  1};
   glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, tmpcol);
@@ -356,13 +340,9 @@ void rendering(bool drawUI=true){
   glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, FOUR_1);
   
   glEnable(GL_LIGHTING);
- 
-  // settiamo matrice di modellazione
-  //drawAxis(); // disegna assi frame OGGETTO
-  //drawCubeWire();
 
   bike.Render(); // disegna la moto
-  world.draw(); // disegna il mondo
+  world.Draw(); // disegna il mondo
   
 	if(drawUI)
     DrawUI();
@@ -370,18 +350,17 @@ void rendering(bool drawUI=true){
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_LIGHTING);
   
-  //glFinish(); //this one makes everything wait for every call to finish
-  glFlush();
+  // glFinish(); //this one makes everything wait for every call to finish
   glutSwapBuffers();
   glutPostRedisplay();
 
 }
 
-void renderHandle() {
+inline void renderHandle() {
    rendering(); 
 }
 
-void reshapeHandler(int w, int h){
+inline void reshapeHandler(int w, int h){
   scrW = w;
   scrH = h;
   rendering();
@@ -396,7 +375,7 @@ void Log() {
 
 //These functions right here, instead, control the UI (and kinda the controller)
 
-void keyboardDownHandler(unsigned char key, int x, int y) {
+inline void keyboardDownHandler(unsigned char key, int x, int y) {
         bike.controller.EatKey(key, keymap , true);
         switch (key){
           case '1':
@@ -438,11 +417,11 @@ void keyboardDownHandler(unsigned char key, int x, int y) {
 
 }
 
-void keyboardUpHandler(unsigned char key, int x, int y) {
+inline void keyboardUpHandler(unsigned char key, int x, int y) {
      bike.controller.EatKey(key, keymap , false);
 }
 
-void joyHandler(unsigned int buttonMask, int x, int y, int z) {
+inline void joyHandler(unsigned int buttonMask, int x, int y, int z) {
   bike.controller.Joy(Controller::ACC, x>0);
   bike.controller.Joy(Controller::LEFT, y<0);
   bike.controller.Joy(Controller::RIGHT, y>0);
@@ -450,9 +429,8 @@ void joyHandler(unsigned int buttonMask, int x, int y, int z) {
   
 }
 
-void idleFunction() {
-      // nessun evento: siamo IDLE
-      
+inline void idleFunction() {
+
       int timeNow = glutGet(GLUT_ELAPSED_TIME); // che ore sono?
       
       if (timeLastInterval+fpsSampling<timeNow) {
@@ -474,45 +452,41 @@ void idleFunction() {
         nstep++;
         doneSomething = true;
         timeNow = glutGet(GLUT_ELAPSED_TIME);
-        if (guardia++>1000) { exit(11); } // siamo troppo lenti!
+        if (guardia++>1000) {  //troppo lenti
+          printf("[FATAL] Could not afford to run at the specified frequency. Aborting.. ");
+          exit(11); 
+        } 
       }
       
       if (doneSomething) {
-          rendering();
-      }
-      //redraw();
-
-      else {
-        // tempo libero!!!
+          glutPostRedisplay();
       }
 }
 
 void motionHandler(int x, int y) {
-            viewAlpha+= x - previous_mouse_position[0];
-            viewBeta += y - previous_mouse_position[1];
-            if (viewBeta<-90) viewBeta=-90;
-            if (viewBeta<+5) viewBeta=+5; //per non andare sotto la macchina
-            if (viewBeta>+90) viewBeta=+90;
-            previous_mouse_position[0] = x;
-            previous_mouse_position[1] = y;
+    viewAlpha+= x - previous_mouse_position[0];
+    viewBeta += y - previous_mouse_position[1];
+    if (viewBeta<-90) viewBeta=-90;
+    if (viewBeta<+5) viewBeta=+5; //per non andare sotto la macchina
+    if (viewBeta>+90) viewBeta=+90;
+    previous_mouse_position[0] = x;
+    previous_mouse_position[1] = y;
 }
 
 void mouseHandler(int button, int state, int x, int y) {
 
-  // printf("%d\n", button);
-
   if (button == GLUT_LEFT_BUTTON && state==GLUT_DOWN && cameraType==CAMERA_MOUSE) {
-            //start listening for motion
-            glutMotionFunc(motionHandler);
+      //start listening for motion
+      glutMotionFunc(motionHandler);
   }
 
   if (button == GLUT_LEFT_BUTTON && state == GLUT_UP && cameraType == CAMERA_MOUSE)
       glutMotionFunc(NULL); //unbind motion
 
   if (button == GLUT_MIDDLE_BUTTON && state == GLUT_DOWN) {
-         // avvicino il punto di vista (zoom in)
-         eyeDist=eyeDist*0.9;
-         if (eyeDist<1) eyeDist = 1;
+      // avvicino il punto di vista (zoom in)
+      eyeDist=eyeDist*0.9;
+      if (eyeDist<1) eyeDist = 1;
   }
   if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN){
     eyeDist=eyeDist/0.9;
@@ -521,7 +495,8 @@ void mouseHandler(int button, int state, int x, int y) {
 }
 
 void exitFunc(unsigned char key, int x, int y) {
-  if (key=='q') exit(0);
+  if (key=='q' || key == 27) 
+    exit(0);
 }
 
 void setInputState(bool active) {

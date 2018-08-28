@@ -41,6 +41,10 @@ class Point3 {
             return Point3(coord[0]*other.coord[0], coord[1]*other.coord[1], coord[2]*other.coord[2]);
         }
 
+        inline Point3 operator*(const float f) const {
+            return Point3(f*coord[0], f*coord[1], f*coord[2]);
+        }
+
         // restituisce il modulo
         inline float modulo() const{
             return sqrt(coord[0]*coord[0] + coord[1]*coord[1] + coord[2]*coord[2]);

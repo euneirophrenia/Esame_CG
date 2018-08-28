@@ -189,7 +189,7 @@ class World {
             
         }
 
-        void draw() {
+        void Draw() {
             // glPushMatrix();
             // glColor3f(0.4,0.4,.8);
             // glScalef(0.75, 1.0, 0.75);

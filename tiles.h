@@ -24,6 +24,7 @@ class Tile {
         bool uselight = true;
         Vector3 basecolor = Vector3(0.8, 0.8, 0.8);
         Vector3 friction = Vector3(base_friction);
+        Point3 model_center;
         
         virtual void DrawShadow() {
             glColor3f(0, 0, 0); // colore fisso
@@ -38,11 +39,15 @@ class Tile {
 
         virtual void DoPhysics() {};
 
+        inline void UpdateModel() {
+        }
+
     public:
         Point3 center; //position of the center of the tile in world coordinates (the origin of the tile-coordinates)
         float rotation = 0; //rotation between world and tile-coords
         sMesh model;
         bool becomesTransparent = false;
+
         inline void Translate(Vector3 vect) {
             center = center + vect;
         }
@@ -50,10 +55,12 @@ class Tile {
         inline Vector3 getScale() {
             return scale;
         }
+
         inline void Translate(float x, float y, float z) {
             center.coord[0] += x;
             center.coord[1] += y;
             center.coord[2] += z;
+
         }
 
         //assume only rotation on the horizontal plane, can't rotate a tile in 3D, just use a different tile
@@ -65,6 +72,7 @@ class Tile {
             scale.coord[0] *= sx;
             scale.coord[1] *= sy;
             scale.coord[2] *= sz;
+
         }
 
         inline void Scale(Vector3 s) {
@@ -79,11 +87,20 @@ class Tile {
             model.FreeBuffers();
         }
 
-        //todo:: also handle rotations!!
 
-        virtual bool hasInside(Point3 point){
+        virtual bool hasInside(Point3 point) {
+            // float cosine = cos(rotation), sine = sin(rotation);
+            // Point3 actual_max = model.bbmax - model_center;
+            // Point3 actual_min = model.bbmin - model_center;
+            // actual_max.coord[0] = cosine * actual_max.X() + sine * actual_max.Z();
+            // actual_max.coord[2] = -sine * actual_max.X() + cosine * actual_max.Z();
+
+            // actual_min.coord[0] = cosine * actual_min.X() + sine * actual_min.Z();
+            // actual_min.coord[2] = -sine * actual_min.X() + cosine * actual_min.Z();
+
             Point3 max = center + (model.bbmax*scale);
             Point3 min = center + (model.bbmin*scale);
+            
             return point.X() <= max.X() && point.X() >= min.X() &&
                     point.Z() <= max.Z() && point.Z() >= min.Z();
         }
@@ -94,6 +111,8 @@ class Tile {
             center.coord[1]=0;
             center.coord[2]=0;
             textureName = texture;
+
+            model_center = (model.bbmax + model.bbmin)/2;
         }
 
         virtual void Draw() {
@@ -389,13 +408,6 @@ class CubeTile : public Tile {
 
         Vector3 normal_at(Point3 point) {
             return UP;
-        }
-
-        virtual bool hasInside(Point3 point){
-            Point3 max = center + (maximum*scale);
-            Point3 min = center + (minimum*scale);
-            return point.X() <= max.X() && point.X() >= min.X() &&
-                    point.Z() <= max.Z() && point.Z() >= min.Z();
         }
 
         virtual void Draw() {
