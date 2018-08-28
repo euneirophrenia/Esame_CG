@@ -231,9 +231,30 @@ class MotorBike : public Vehicle {
                 return 0;
             }
 
+            //-vz for proper vertical orientation
+            //
             last_orientation = -atan2(vx, -vz);
             return last_orientation;
         }
+
+        void FreeBuffers() {
+            carlinga->FreeBuffers();
+            back_wheel->FreeBuffers();
+            front_wheel->FreeBuffers();
+            plate->FreeBuffers();
+            pilot->FreeBuffers();
+            face->FreeBuffers();
+            helmet->FreeBuffers();
+
+            delete back_wheel;
+            delete carlinga;
+            delete front_wheel;
+            delete plate;
+            delete pilot;
+            delete face;
+            delete helmet;
+        }
+    
 
         void Init() {
             // inizializzo lo stato della macchina

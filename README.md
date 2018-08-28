@@ -2,7 +2,7 @@
 
 # Final Project - Computer Graphics 2018
 
-## **Introduzione**
+## **Setup**
 Questo progetto è stato realizzato in **C++** (standard 11) con 
 - **OpenGL** (2.1+)
 - **GLUT / FreeGLUT**

@@ -36,7 +36,7 @@ CFLAGS=$(CFLAGS) "-I./Geometry" "-I./Glew"
 FLAG =-Wno-deprecated -O3
 RM = rm -f
 
-all: $(BIN)
+all: clean $(BIN) 
 
 clean:
 	${RM} $(OBJ) $(BIN)

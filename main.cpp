@@ -1,6 +1,7 @@
 #include <math.h>
 #include <unistd.h>
 #include <time.h>
+#include <cstdlib>
 
 #include "vehicles.h"
 #include "world.h"
@@ -203,8 +204,8 @@ void DrawMiniMap() {
 
   glPushMatrix();
     glColor3f(0, 1, 0);
-  
-    glTranslated(player_position.X()/ROOM_SIZE, player_position.Z()/ROOM_SIZE, 0);
+
+    glTranslated(player_position.X()/ROOM_SIZE, player_position.Z()/ROOM_SIZE, 0);  
 
     for (auto tile: world.getTiles()){
       glPushMatrix();
@@ -224,14 +225,15 @@ void DrawMiniMap() {
     glColor3f(1,0,0);
     glTranslatef(-center.X(), -center.Y(), 0);
     glBegin(GL_TRIANGLES);
-        auto tmp = rotateAround(A, center, bike.horizontal_orientation());
+        auto tmp = rotateAround(A, center, +bike.horizontal_orientation());
         glVertex2f(tmp.coord[0] , tmp.coord[1]);
 
-        tmp = rotateAround(B, center, bike.horizontal_orientation());
+        tmp = rotateAround(B, center, +bike.horizontal_orientation());
         glVertex2f(tmp.coord[0] , tmp.coord[1]);
 
-        tmp = rotateAround(C, center, bike.horizontal_orientation());
+        tmp = rotateAround(C, center, +bike.horizontal_orientation());
         glVertex2f(tmp.coord[0] , tmp.coord[1]);
+
     glEnd();
   glPopMatrix();
   glViewport(0, 0, scrW, scrH);
@@ -308,7 +310,7 @@ void rendering(bool drawUI=true){
   // un frame in piu'!!!
   fpsNow++;
   
-  glLineWidth(2); // linee larghe
+  glLineWidth(1);
      
   // settiamo il viewport
   glViewport(0,0, scrW, scrH);
@@ -529,6 +531,13 @@ void setInputState(bool active) {
   glutIdleFunc(active? idleFunction : NULL);
 }
 
+void CleanUpFunc() {
+  printf("\n[DEBUG] Cleaning up...");
+  bike.FreeBuffers();
+  world.FreeBuffers();
+  printf(" done!\n");
+}
+
 int main(int argc, char* argv[])
 {
   glutInit( &argc, argv );
@@ -537,11 +546,11 @@ int main(int argc, char* argv[])
   glutInitWindowSize( scrH, scrW );
 
   glutCreateWindow( "CG2018 Di Vincenzo" );
-  // const GLubyte* renderer = glGetString (GL_RENDERER);
-  // const GLubyte* version =  glGetString (GL_VERSION);
+  const GLubyte* renderer = glGetString (GL_RENDERER);
+  const GLubyte* version =  glGetString (GL_VERSION);
 
-  // printf ("\n[DEBUG]\tRenderer: %s\n", renderer);
-  // printf ("[DEBUG]\tOpenGL version supported: %s\n", version);
+  printf ("\n[DEBUG]\tRenderer: %s\n", renderer);
+  printf ("[DEBUG]\tOpenGL version supported: %s\n", version);
 
 
   world.BindBuffers(); // setup the buffers so that we don't need to resend all the geometry to the GPU when drawing the world 
@@ -563,6 +572,8 @@ int main(int argc, char* argv[])
 
   TextureProvider* texProvider = TextureProvider::getInstance();
   srand(time(NULL));
+
+  std::atexit(CleanUpFunc); //to cleanup after exiting
   
   texProvider->LoadTexture("Resources/logo.ppm");
   texProvider->LoadTexture("Resources/me.ppm");

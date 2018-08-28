@@ -72,6 +72,11 @@ class sMesh {
             glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3)*points.size(), normals.data(), mode);
         }
 
+        void FreeBuffers() {
+            glDeleteBuffers(1, &vertexBuffer);
+            glDeleteBuffers(1, &normalBuffer);
+        }
+
         void ComputeNormalsPerFace() {
 
             for (int i=0; i<f.size(); i++){

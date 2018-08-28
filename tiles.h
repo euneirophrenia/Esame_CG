@@ -75,6 +75,10 @@ class Tile {
             model.BindBuffers();
         }
 
+        inline void FreeBuffers() {
+            model.FreeBuffers();
+        }
+
         //todo:: also handle rotations!!
 
         virtual bool hasInside(Point3 point){

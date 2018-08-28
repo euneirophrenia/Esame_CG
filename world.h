@@ -221,6 +221,12 @@ class World {
             }
         }
 
+        void FreeBuffers() {
+            for (auto tile: tiles) {
+                tile->FreeBuffers();
+            }
+        }
+
 
         inline float height_at(float x, float z) {
             return height_at(Point3(x,0,z));
