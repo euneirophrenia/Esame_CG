@@ -7,10 +7,12 @@
 #include "world.h"
 
 
-float viewAlpha=20, viewBeta=40; // angoli che definiscono la vista
-float eyeDist=5.0; // distanza dell'occhio dall'origine
-int scrH=750, scrW=750; // altezza e larghezza viewport (in pixels)
-bool useWireframe=false;
+float viewAlpha=20, viewBeta=40;  // angoli che definiscono la vista
+float eyeDist=5.0;                // distanza dell'occhio dall'origine
+int scrH=750, scrW=750;           // altezza e larghezza viewport (in pixels)
+
+// several swtiches for several functions ----
+bool useWireframe=false;      
 bool useTransparency=false;
 bool useHeadlight=false;
 bool useShadow=true;
@@ -19,9 +21,10 @@ bool showMenu = false;
 bool useBadWireFrame = false;
 bool stopTime = false;
 int cameraType=0;
+//--------
 
-// for minimap
-const Point2 A(0.5, 0.56);
+// for minimap, vertices of minitriangle, in quad coords, fine tuned by hand 
+const Point2 A(0.5, 0.56); 
 const Point2 B(0.48, 0.47);
 const Point2 C(0.52, 0.47);
 const Point3 center = (A+B+C)/3.0;
@@ -31,7 +34,7 @@ std::string floor_texture = "Resources/parquet.ppm";
 
 int previous_mouse_position[2] = {0, 0};
 
-static int keymap[Controller::NKEYS] = {'a', 'd', 'w', 's'};
+static int keymap[Controller::NKEYS] = {'A', 'D', 'W', 'S'};
 
 World world;
 MotorBike bike(&world); // la nostra moto
@@ -184,8 +187,9 @@ printf("%f %f %f\n",viewAlpha,viewBeta,eyeDist);
         }
 }
 
-void setInputState(bool active);
-void rendering(bool);
+/** --- UI  section ---- */
+void setInputState(bool active); //hack per poter usare funzioni dichiarate dopo
+void rendering(bool);           // "" "" "" "" "" "" "" 
 
 void DrawMiniMap() {
 
@@ -296,6 +300,7 @@ inline void DrawUI(){
   glEnable(GL_LIGHTING);
   
 }
+// ---- FINE UI ----
 
 /* Esegue il Rendering della scena */
 inline void rendering(bool drawUI=true){
@@ -356,6 +361,8 @@ inline void rendering(bool drawUI=true){
 
 }
 
+/* Handlers per eventi GLUT */
+
 inline void renderHandle() {
    rendering(); 
 }
@@ -373,9 +380,9 @@ void Log() {
 
 }
 
-//These functions right here, instead, control the UI (and kinda the controller)
-
 inline void keyboardDownHandler(unsigned char key, int x, int y) {
+
+        if (key >= 97) key-= 32; //use only capitals, otherwise a capslock on would block all the input
         bike.controller.EatKey(key, keymap , true);
         switch (key){
           case '1':
@@ -394,7 +401,8 @@ inline void keyboardDownHandler(unsigned char key, int x, int y) {
           case '5':
              useShadow=!useShadow;
              break;
-          case 'q': 
+
+          case 'Q':
             exit(0);
           case 27: //escape
             exit(0);
@@ -405,19 +413,20 @@ inline void keyboardDownHandler(unsigned char key, int x, int y) {
             useBadWireFrame = !useBadWireFrame;
             useWireframe = useBadWireFrame;
             break;
-          case 'p':
+          case 'P':
             stopTime = !stopTime;
             break;
-          case 'm': 
+          case 'M':
             showMinimap=!showMinimap;
             break;
-          case 'h':
+          case 'H':
             showMenu = !showMenu;
         }
 
 }
 
 inline void keyboardUpHandler(unsigned char key, int x, int y) {
+     if (key >= 97) key-= 32; //use only capital letters, otherwise a capslock on would block all the input
      bike.controller.EatKey(key, keymap , false);
 }
 
@@ -498,7 +507,11 @@ void exitFunc(unsigned char key, int x, int y) {
   if (key=='q' || key == 27) 
     exit(0);
 }
+/* Fine handling eventi GLUT */
 
+
+/* Utility functions */
+/// To disable everything upon crashing
 void setInputState(bool active) {
   glutKeyboardUpFunc(active? keyboardUpHandler : exitFunc);
   glutKeyboardFunc(active? keyboardDownHandler : NULL);
@@ -506,10 +519,12 @@ void setInputState(bool active) {
   glutIdleFunc(active? idleFunction : NULL);
 }
 
+/// To avoid memory leaking and reducing memory page swap upon several consecutive runs
 void CleanUpFunc() {
-  printf("\n[DEBUG] Cleaning up...");
+  printf("[DEBUG] Cleaning up...");
   bike.FreeBuffers();
   world.FreeBuffers();
+  texProvider -> FreeTextures();
   printf(" done!\n");
 }
 
@@ -520,11 +535,14 @@ int main(int argc, char* argv[])
   glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH); // colori + double buffer + z-buffer
   glutInitWindowSize( scrH, scrW );
 
-  glutCreateWindow( "CG2018 Di Vincenzo" );
+  glutCreateWindow("A Toy Soldier Story" );
   const GLubyte* renderer = glGetString (GL_RENDERER);
   const GLubyte* version =  glGetString (GL_VERSION);
 
-  printf ("\n[DEBUG]\tRenderer: %s\n", renderer);
+  printf("\n-------- A Toy Soldier Story ----------\n");
+  printf("... Tratto  da una storia vera ...\n");
+  printf("Author:\tMarco Di Vincenzo - 0000795484\n");
+  printf ("[DEBUG]\tRenderer: %s\n", renderer);
   printf ("[DEBUG]\tOpenGL version supported: %s\n", version);
 
 
@@ -557,7 +575,7 @@ int main(int argc, char* argv[])
   texProvider->LoadTexture("Resources/asphalt2.ppm");
   texProvider->LoadTexture("Resources/text.ppm");
   texProvider->LoadTexture("Resources/menu.ppm");
-  texProvider->LoadTexture("Resources/universe.ppm");
+  texProvider->LoadTexture("Resources/ball3.ppm");
   texProvider->LoadTexture("Resources/wall1.ppm");
   texProvider->LoadTexture("Resources/wall3.ppm");
   texProvider->LoadTexture("Resources/wall4.ppm");
@@ -566,19 +584,19 @@ int main(int argc, char* argv[])
   texProvider->LoadTexture("Resources/dice2.ppm");
   texProvider->LoadTexture("Resources/dice3.ppm");
   texProvider->LoadTexture("Resources/dice4.ppm");
-  texProvider->LoadTexture("Resources/dice5.ppm");
   texProvider->LoadTexture("Resources/carpet.ppm");
   texProvider->LoadTexture("Resources/ball2.ppm");
 
-  glutDisplayFunc(renderHandle);
-
-  glutKeyboardUpFunc(keyboardUpHandler);
-  glutKeyboardFunc(keyboardDownHandler);
-  glutMouseFunc(mouseHandler);
-  glutIdleFunc(idleFunction);
-  glutMotionFunc(NULL);
-  glutJoystickFunc(joyHandler, 1);
-  glutReshapeFunc(reshapeHandler);
+  // Hook up handlers
+  glutDisplayFunc(renderHandle);          //rendering
+  glutKeyboardUpFunc(keyboardUpHandler);  // keyboard input UP
+  glutKeyboardFunc(keyboardDownHandler);  // keyboard input DOWN
+  glutMouseFunc(mouseHandler);            // mouse click
+  glutIdleFunc(idleFunction);             // idle 
+  glutMotionFunc(NULL);                   // mouse motion
+  glutJoystickFunc(joyHandler, 1);        // joystick, with polling interval (1ms)
+  glutReshapeFunc(reshapeHandler);        // reshape window
+  //----
 
   glutMainLoop();
  

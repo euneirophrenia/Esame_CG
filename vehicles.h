@@ -10,11 +10,13 @@ extern bool useShadow;
 extern bool useEnvmap;
 extern int cameraType;
 
+//Some fixed colors, just to be able to change them all together
 const Vector3 SOLDIER_GREEN(31.0/255, 112.0/255, 73.0/255);
-const Vector3 HEAD_HACK(38/255.0f, 25/255.0f, 16/255.0f);
+const Vector3 HEAD_HACK(38/255.0f, 25/255.0f, 16/255.0f); // #hacks
+//---
 const float light_dir[] {0, 0, -1, 0};
 
-extern TextureProvider* texProvider;
+extern TextureProvider* texProvider; // only access point for textures
 
 class Vehicle {
 
@@ -54,10 +56,7 @@ class Vehicle {
         }
 
     public:
-        // Metodi
         Controller controller;
-
-        
 
         inline virtual void Render() {
             // sono nello spazio mondo
@@ -88,7 +87,7 @@ class Vehicle {
             
         }
 
-        float Velocity() {
+        inline float Velocity() {
             return Vector3(vx, vy, vz).modulo();
         }
 
@@ -168,35 +167,37 @@ class MotorBike : public Vehicle {
                 glDisable(GL_TEXTURE_2D);
             glPopMatrix();
 
+
+            // ------ CARLINGA ------
             if (usecolor) {
                 glEnable(GL_LIGHTING);
                 glColor3f(0.5, 0.6, 0.5);
             }
+            carlinga->RenderArray(); // rendering delle mesh carlinga 
 
-            carlinga->RenderArray(); // rendering delle mesh carlinga usando normali per vertice
             if (usecolor) {
                 glColor3f(1,1,1);
                 texProvider->SetupAutoTexture2D("Resources/text.ppm", plate->bbmin, plate->bbmax);
             }
-            plate->RenderNxF();
+            plate->RenderNxF();  //targa, leggermente meglio con le normali per faccia anche se meno efficiente
             glDisable(GL_TEXTURE_2D);
             glDisable(GL_TEXTURE_GEN_S);
             glDisable(GL_TEXTURE_GEN_T);
 
-
+            // ---------- Pilota -------
             if (usecolor) {
                 //glColor3f(1,1,1);
                 //SetupTexture(3, pilot->bbmin, pilot->bbmax);
                 glColor3f(SOLDIER_GREEN.X(), SOLDIER_GREEN.Y(), SOLDIER_GREEN.Z());
             }
-            pilot->RenderArray(); // to be more efficient
+            pilot->RenderArray();
             glDisable(GL_TEXTURE_2D);
             glDisable(GL_TEXTURE_GEN_S);
             glDisable(GL_TEXTURE_GEN_T);
 
             if (usecolor) {
                 glColor3f(1,1,1);
-                //don't bother using the face texture if nobody can see it
+                //don't bother using the face texture if nobody can see it (plus it was wrong-ish anyway)
                 if (cameraType == CAMERA_FRONT || cameraType == CAMERA_MOUSE)
                     texProvider->SetupAutoTexture2D("Resources/me.ppm", face->bbmin, face->bbmax, GL_OBJECT_LINEAR);
                 else 
@@ -232,7 +233,6 @@ class MotorBike : public Vehicle {
             }
 
             //-vz for proper vertical orientation
-            //
             last_orientation = -atan2(vx, -vz);
             return last_orientation;
         }
@@ -245,9 +245,10 @@ class MotorBike : public Vehicle {
             pilot->FreeBuffers();
             face->FreeBuffers();
             helmet->FreeBuffers();
-
-            delete back_wheel;
+            
+            //Also destroy pointers created with the "new" keyword, allocated in the heap
             delete carlinga;
+            delete back_wheel;
             delete front_wheel;
             delete plate;
             delete pilot;

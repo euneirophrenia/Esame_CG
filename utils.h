@@ -5,6 +5,17 @@
 #include <string.h>
 #include "ppm.h"
 
+/**
+ * 
+ * This file contains a lot of things.
+ *  1. Utility functions to draw squares and apply texture to them
+ *  2. Utilities to draw cubes, built on top of the function to draw squares
+ *  3. Function to draw circles
+ *  4. Class to handle textures and provide a somewhat cleaner interface towards OpenGL bindings
+ *  5. Function to draw 2D text on screen
+ * 
+ */
+
 
 extern int scrH, scrW;
 
@@ -89,22 +100,22 @@ void SetupTexture(int texture, Point3 min, Point3 max, GLuint mode = GL_OBJECT_L
 inline void DrawText(int width, int height, std::string text, Vector3 color = LIGHT_GREEN) {
   glMatrixMode(GL_PROJECTION);
   glPushMatrix();
-  glLoadIdentity();
-  gluOrtho2D(0.0, scrW, 0.0, scrH);
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glLoadIdentity();
+    glLoadIdentity();
+    gluOrtho2D(0.0, scrW, 0.0, scrH);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+      glLoadIdentity();
 
-  glColor3f(color.coord[0], color.coord[1], color.coord[2]); //font color
-  glRasterPos2i(width, height);
+      glColor3f(color.coord[0], color.coord[1], color.coord[2]); //font color
+      glRasterPos2i(width, height);
 
-  void* font = GLUT_BITMAP_9_BY_15; //font
-  for (auto c : text){
-    glutBitmapCharacter(font, c);
-  }
+      void* font = GLUT_BITMAP_9_BY_15; //font
+      for (auto c : text){
+        glutBitmapCharacter(font, c);
+      }
 
-  glMatrixMode(GL_MODELVIEW);
-  glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
   glMatrixMode(GL_PROJECTION);
   glPopMatrix();
 }
@@ -115,47 +126,7 @@ class TextureProvider {
     int count=0;
     static TextureProvider* instance;
 
-    /*static bool LoadTexture(int textbind, char *filename){
-      GLenum texture_format;
-      SDL_Surface *s = IMG_Load(filename);
-
-      if (!s) return false;
-
-      if (s->format->BytesPerPixel == 4){     // contiene canale alpha
-        if (s->format->Rmask == 0x000000ff){
-          texture_format = GL_RGBA;
-        }
-        else{
-          texture_format = GL_BGRA;
-        }
-      } else if (s->format->BytesPerPixel == 3){     // non contiene canale alpha
-        if (s->format->Rmask == 0x000000ff)
-          texture_format = GL_RGB;
-        else
-          texture_format = GL_BGR;
-        } else {
-            printf("[ERROR] the image is not truecolor\n");
-            exit(1);
-          }
-
-      glBindTexture(GL_TEXTURE_2D, textbind);
-      gluBuild2DMipmaps(
-          GL_TEXTURE_2D, 
-          3,
-          s->w, s->h, 
-          texture_format,
-          GL_UNSIGNED_BYTE,
-          s->pixels
-      );
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR ); 
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR ); 
-      // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-      // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
-
-      return true;
-    }*/
-
-    TextureProvider() {}
+    TextureProvider() {}  // in a singleton, the constructor needs to be private
 
 
   public:
@@ -168,7 +139,7 @@ class TextureProvider {
       count++;
     }
 
-    inline int indexOf(std::string texname) {
+    inline int indexOf(std::string texname) {  // in case I missed the use of numbers to call textures somewhere
       return map[texname];
     }
 
@@ -182,6 +153,13 @@ class TextureProvider {
       glEnable(target);
       glBindTexture(target, map[name]);
       
+    }
+
+    void FreeTextures() {
+        for (int i=0; i<count; i++){
+            GLuint tmp = i;
+            glDeleteTextures(1, &tmp);
+        }
     }
 
     inline void SetupAutoTexture2D(std::string texture, Point3 max, Point3 min, GLuint mode = GL_OBJECT_LINEAR) {

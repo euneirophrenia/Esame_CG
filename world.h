@@ -136,7 +136,7 @@ class World {
             obstacle3->Translate(48, 0.1, 0);
             
 
-            SphereTile* sphere = new SphereTile((char*) "./Resources/sphere.obj", "Resources/universe.ppm", 0.5);
+            SphereTile* sphere = new SphereTile((char*) "./Resources/sphere.obj", "Resources/ball3.ppm", 0.5);
             sphere->Scale(2, 2, 2);
             sphere->Rotate(90);
             sphere->Translate(-19, 2, 30);
@@ -146,7 +146,7 @@ class World {
             sphere2->Rotate(90);
             sphere2->Translate(19, 2, -19);
 
-            SphereTile* sphere3 = new SphereTile((char*) "./Resources/sphere.obj", "Resources/ball2.ppm", -0.5);
+            SphereTile* sphere3 = new SphereTile((char*) "./Resources/sphere.obj", "Resources/ball3.ppm", -0.5);
             sphere3->Scale(2, 2, 2);
             sphere3->Rotate(90);
             sphere3->Translate(-39, 2, -35);
@@ -154,13 +154,13 @@ class World {
 
             CubeTile* cube = new CubeTile((char*) "./Resources/cube.obj");
             cube->Rotate(45);
-            cube->Scale(1.5,1.5,1.5);
-            cube->Translate(30, 1.5, 20);
+            cube->Scale(1.2, 1.2, 1.2);
+            cube->Translate(30, 1.2, 20);
 
             CubeTile* cube2 = new CubeTile((char*) "./Resources/cube.obj");
-            cube2->Rotate(45);
-            cube2->Scale(1.5,1.5,1.5);
-            cube2->Translate(-30, 1.5, 20);
+            cube2->Rotate(-45);
+            cube2->Scale(1.2, 1.2,1.2);
+            cube2->Translate(-30, 1.2, 20);
 
             WhirligigTile* whirl = new WhirligigTile((char*) "./Resources/whirligig.obj");
             whirl->Scale(1.5, 1.5, 1.5);
@@ -180,25 +180,11 @@ class World {
             tiles.push_back(sphere);
             tiles.push_back(sphere2);
             tiles.push_back(sphere3);
-
-            // for (auto tile : tiles) {
-            //     for (float f : tile->model.Flat_Vertices()) {
-            //         vertices.push_back(f);
-            //     }
-            // }
             
         }
 
         void Draw() {
-            // glPushMatrix();
-            // glColor3f(0.4,0.4,.8);
-            // glScalef(0.75, 1.0, 0.75);
-            // glTranslatef(0,0.01,0);
-            // //pista.RenderNxV();
-            // pista.RenderNxF();
-            // glPopMatrix();
-            
-           
+
             drawSky();   
             drawFloor();   
 

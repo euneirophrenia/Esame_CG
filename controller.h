@@ -1,6 +1,6 @@
 #pragma once
 
-//This one controls the vehicle
+//This one controls the vehicle, pretty much the same as car4
 class Controller {
     public:
         enum { LEFT=0, RIGHT=1, ACC=2, DEC=3, NKEYS=4 };

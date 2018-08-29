@@ -1,9 +1,9 @@
 #pragma once
 
 #include "./Geometry/sMesh.h"
-#include <cmath>
 #include "utils.h"
 #include <cstdlib>
+#include <cmath>
 
 extern bool useShadow;
 extern bool useTransparency;
@@ -24,7 +24,7 @@ class Tile {
         bool uselight = true;
         Vector3 basecolor = Vector3(0.8, 0.8, 0.8);
         Vector3 friction = Vector3(base_friction);
-        Point3 model_center;
+        Point3 model_center, max, min;
         
         virtual void DrawShadow() {
             glColor3f(0, 0, 0); // colore fisso
@@ -50,7 +50,10 @@ class Tile {
 
         inline void Translate(Vector3 vect) {
             center = center + vect;
+            max = center + (model.bbmax*scale);
+            min = center + (model.bbmin*scale);
         }
+
 
         inline Vector3 getScale() {
             return scale;
@@ -60,6 +63,9 @@ class Tile {
             center.coord[0] += x;
             center.coord[1] += y;
             center.coord[2] += z;
+
+            max = center + (model.bbmax*scale);
+            min = center + (model.bbmin*scale);
 
         }
 
@@ -72,6 +78,9 @@ class Tile {
             scale.coord[0] *= sx;
             scale.coord[1] *= sy;
             scale.coord[2] *= sz;
+
+            max = center + (model.bbmax*scale);
+            min = center + (model.bbmin*scale);
 
         }
 
@@ -89,7 +98,12 @@ class Tile {
 
 
         virtual bool hasInside(Point3 point) {
+            /* TODO: Handle rotations, this code right here below is bugged, and the one in use doesn't account for rotations*/
+            /* Also, it shouldn't in principle be run at every single check, the actual bbox should be update with every transformation.
+             * But, alas, here we are
+             */
             // float cosine = cos(rotation), sine = sin(rotation);
+            // model_center = ((scale*model.bbmax)*0.5) + ((scale*model.bbmin) *0.5);
             // Point3 actual_max = model.bbmax - model_center;
             // Point3 actual_min = model.bbmin - model_center;
             // actual_max.coord[0] = cosine * actual_max.X() + sine * actual_max.Z();
@@ -98,8 +112,8 @@ class Tile {
             // actual_min.coord[0] = cosine * actual_min.X() + sine * actual_min.Z();
             // actual_min.coord[2] = -sine * actual_min.X() + cosine * actual_min.Z();
 
-            Point3 max = center + (model.bbmax*scale);
-            Point3 min = center + (model.bbmin*scale);
+            // Point3 max = scale*(actual_max + model_center) + center;
+            // Point3 min = scale*(actual_min + model_center) + center;
             
             return point.X() <= max.X() && point.X() >= min.X() &&
                     point.Z() <= max.Z() && point.Z() >= min.Z();
@@ -113,6 +127,8 @@ class Tile {
             textureName = texture;
 
             model_center = (model.bbmax + model.bbmin)/2;
+            max = center + (model.bbmax*scale);
+            min = center + (model.bbmin*scale);
         }
 
         virtual void Draw() {
@@ -312,7 +328,7 @@ class SphereTile : public Tile {
 
         inline void DoPhysics(){
             if (stopTime) return;
-            center.coord[0] += velocity;
+            Translate(velocity, 0, 0);
             glRotatef(-angle, 0, 0, 1);
             angle += 180.0 * (velocity / scale.Y()) / M_PI;
             if (abs(center.coord[0])>90) 
@@ -398,8 +414,11 @@ class CubeTile : public Tile {
         explicit CubeTile(char* filename) : Tile(filename) {
             textureName = "Resources/logo.ppm";
             textures.push_back(textureName);
-            for (int k=1; k<6;k++)
-                textures.push_back("Resources/dice" + std::to_string(k) + ".ppm");
+            textures.push_back("Resources/dice1.ppm");
+            textures.push_back("Resources/dice2.ppm");
+            textures.push_back("Resources/dice2.ppm");
+            textures.push_back("Resources/dice3.ppm");
+            textures.push_back("Resources/dice4.ppm");
 
         }
         float height_at(Point3 point) {
