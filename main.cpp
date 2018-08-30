@@ -189,7 +189,6 @@ printf("%f %f %f\n",viewAlpha,viewBeta,eyeDist);
 
 /** --- UI  section ---- */
 void setInputState(bool active); //hack per poter usare funzioni dichiarate dopo
-void rendering(bool);           // "" "" "" "" "" "" "" 
 
 void DrawMiniMap() {
 
@@ -202,12 +201,12 @@ void DrawMiniMap() {
   glPushMatrix();
     glColor3f(0, 1, 0);
 
-    glTranslated(player_position.X()/ROOM_SIZE, player_position.Z()/ROOM_SIZE, 0);  
+    glTranslated(-player_position.X()/ROOM_SIZE, player_position.Z()/ROOM_SIZE, 0);  //-X, +Z to account for an OpenGL peculiarty
 
     for (auto tile: world.getTiles()){
       glPushMatrix();
   
-        glTranslated(-tile->center.X()/ROOM_SIZE, -tile->center.Z()/ROOM_SIZE, 0);
+        glTranslated(tile->center.X()/ROOM_SIZE, -tile->center.Z()/ROOM_SIZE, 0); // same with the +X, -Z, here
         auto s = tile->getScale();
         glScaled(s.X(), s.Z(), 1);
         glRotated(tile->rotation, 0, 0, 1);
@@ -302,8 +301,9 @@ inline void DrawUI(){
 }
 // ---- FINE UI ----
 
-/* Esegue il Rendering della scena */
-inline void rendering(bool drawUI=true){
+
+/* Handlers per eventi GLUT */
+inline void renderHandle(){
   
   // un frame in piu'!!!
   fpsNow++;
@@ -349,8 +349,8 @@ inline void rendering(bool drawUI=true){
   bike.Render(); // disegna la moto
   world.Draw(); // disegna il mondo
   
-	if(drawUI)
-    DrawUI();
+
+  DrawUI();
   
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_LIGHTING);
@@ -361,16 +361,10 @@ inline void rendering(bool drawUI=true){
 
 }
 
-/* Handlers per eventi GLUT */
-
-inline void renderHandle() {
-   rendering(); 
-}
-
 inline void reshapeHandler(int w, int h){
   scrW = w;
   scrH = h;
-  rendering();
+  glutPostRedisplay();
 }
 
 void Log() {
@@ -567,7 +561,8 @@ int main(int argc, char* argv[])
   srand(time(NULL));
 
   std::atexit(CleanUpFunc); //to cleanup after exiting
-  
+
+  // texProvider->LoadTexture("Resources/intro.ppm");
   texProvider->LoadTexture("Resources/logo.ppm");
   texProvider->LoadTexture("Resources/me.ppm");
   texProvider->LoadTexture("Resources/wood.ppm");
@@ -586,6 +581,7 @@ int main(int argc, char* argv[])
   texProvider->LoadTexture("Resources/dice4.ppm");
   texProvider->LoadTexture("Resources/carpet.ppm");
   texProvider->LoadTexture("Resources/ball2.ppm");
+  
 
   // Hook up handlers
   glutDisplayFunc(renderHandle);          //rendering

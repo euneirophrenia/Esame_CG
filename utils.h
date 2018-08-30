@@ -40,8 +40,8 @@ inline Point2 rotateAround(Point2 src, Point3 center, float angle) {
 
   Point3 diff = src - center;
 
-  return Point2(center.coord[0] + diff.coord[0]*cosine + diff.coord[1]*sine,
-                center.coord[1] - diff.coord[0]*sine + diff.coord[1]*cosine);
+  return Point2(center.coord[0] - (diff.coord[0]*cosine + diff.coord[1]*sine),  // minus, to account for a OpenGL peculiarity
+                center.coord[1] + (-diff.coord[0]*sine + diff.coord[1]*cosine));
 
 }
 
