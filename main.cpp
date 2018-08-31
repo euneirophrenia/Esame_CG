@@ -20,6 +20,7 @@ bool showMinimap = false;
 bool showMenu = false;
 bool useBadWireFrame = false;
 bool stopTime = false;
+bool dead = false;
 int cameraType=0;
 //--------
 
@@ -241,18 +242,24 @@ inline void DrawUI(){
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_LIGHTING);
   glDisable(GL_CULL_FACE); // it's actually funnier with culling, but wrong
-  glPolygonMode( GL_FRONT_AND_BACK, GL_FILL);
  
   DrawText(0, scrH-20, "FPS " + std::to_string(fps));
   float v=bike.Velocity();
   DrawText(20, 20, "Speed: " + std::to_string(int(v*500)) + " km/h");
 
-  if (bike.crashed){
+  if (bike.crashed && !dead){
     DrawText(scrW/2, scrH/2, "C R A S H E D", RED);
     DrawText(scrW/2 - 5, scrH/2 - 25, "press Q to exit", RED);
     setInputState(false);
-    
   }
+
+  if (dead) {
+    DrawText(scrW/2 - 150, scrH/2, "You got eaten by the Monster Under the Bed (TM)", RED);
+    DrawText(scrW/2 - 5, scrH/2 - 25, "press Q to exit", RED);
+    DrawText(scrW/2 - 150, scrH/2 - 50, "..did I mention there's a monster under the bed?", RED);
+    setInputState(false);
+  }
+
   if (showMinimap)
     DrawMiniMap();
   
@@ -268,15 +275,12 @@ inline void DrawUI(){
     glBindTexture(GL_TEXTURE_2D, texProvider->indexOf("Resources/menu.ppm"));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    //this gets deformed and the fix is not straight forwads since on MacOS with Retina display pixel coordinates =/= pixels...
     glBegin(GL_QUADS);  
-      glTexCoord2f(20,0);
-        glVertex2d(20,0);
-      glTexCoord2f(20,20);
-        glVertex2d(20,20);
-      glTexCoord2f(0,20);
-        glVertex2d(0,20);
-      glTexCoord2f(0,0);
-        glVertex2d(0,0);
+      glTexCoord2f(20, 0);  glVertex2d(20, 0);
+      glTexCoord2f(20, 20); glVertex2d(20, 20);
+      glTexCoord2f(0, 20);  glVertex2d(0, 20);
+      glTexCoord2f(0, 0);   glVertex2d(0, 0);
     glEnd();
     glDisable(GL_TEXTURE_2D);
     glViewport(0, 0, scrW, scrH);
@@ -520,6 +524,9 @@ void CleanUpFunc() {
   world.FreeBuffers();
   texProvider -> FreeTextures();
   printf(" done!\n");
+  if (dead) {
+    printf("..Did I mention there's a monster under the bed?\n");
+  }
 }
 
 int main(int argc, char* argv[])
@@ -546,7 +553,7 @@ int main(int argc, char* argv[])
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
-  glEnable(GL_NORMALIZE); // opengl, per favore, rinormalizza le normali prima di usarle
+  glEnable(GL_RESCALE_NORMAL); // opengl, per favore, rinormalizza le normali prima di usarle (the fast way)
   glEnable(GL_CULL_FACE);
   glFrontFace(GL_CW); // consideriamo Front Facing le facce ClockWise
   
@@ -562,7 +569,6 @@ int main(int argc, char* argv[])
 
   std::atexit(CleanUpFunc); //to cleanup after exiting
 
-  // texProvider->LoadTexture("Resources/intro.ppm");
   texProvider->LoadTexture("Resources/logo.ppm");
   texProvider->LoadTexture("Resources/me.ppm");
   texProvider->LoadTexture("Resources/wood.ppm");
@@ -581,6 +587,8 @@ int main(int argc, char* argv[])
   texProvider->LoadTexture("Resources/dice4.ppm");
   texProvider->LoadTexture("Resources/carpet.ppm");
   texProvider->LoadTexture("Resources/ball2.ppm");
+  texProvider->LoadTexture("Resources/fire.ppm");
+  
   
 
   // Hook up handlers

@@ -35,18 +35,16 @@ Il progetto è fortemente ispirato a ```Car4``` (progetto di esempio mostrato a 
 ## **Il Gioco**
 La scena è ambientata nella stanza di un bambino, con il pavimento, in finissimo parquet, cosparso di alcuni suoi giochi.
 Al giocatore è delegato il controllo di una moto giocattolo, alla cui guida si trova un soldatino, altrettanto giocattolo, con le fattezze dell'autore (ossia la faccia, giustamente turbata e perplessa dalla situazione).
-La moto e il soldatino possono compiere alcune evoluzioni saltando su rampe e muovendosi liberamente nell'ambiente. L'unica regola è il cercare di non schiantarsi sui muri e sui vari oggetti presenti nella scena (nel qual caso, il gioco finisce). Si ignorino le evidenti violazioni del codice della strada e il casco non adeguatamente allacciato.
+La moto e il soldatino possono compiere alcune evoluzioni saltando su rampe e muovendosi liberamente nell'ambiente. L'unica regola è cercare di non morire, ossia evitando di schiantarsi sui muri e sui vari oggetti presenti nella scena ed evitando di essere mangiati (nel qual caso, il gioco finisce). Si ignorino le evidenti irrazionalità e il casco non adeguatamente allacciato.
 
-![L'immagine non è aggiornata.](Resources/screen.png)
+![Un bellissimo screenshot che mostra alcuni oggetti della stanza e che per qualche motivo non è stato caricato a dovere.](Resources/screen.png)
 
 Nella stanza, si trovano:
 * dei **dadi**, che non hanno particolari meriti se non il mostrare qualche texture sulle facce
 * delle **biglie** in movimento, che possono diventare *trasparenti* all'occorrenza (ed essere fermate onde evitare di rimanere schiacciati).
 * delle **rampe** di forma varia, su cui la moto può ragionevolmente salire, in legno
 * una **trottola**, tratta dal film *"Inception"*
-* un **tappeto**, liberamente ispirato all'infanzia dell'autore, che oltre a mostrare un'opportuna texture, limita i movimenti della moto fornendo attrito superiore.
-
-
+* un **tappeto**, liberamente ispirato all'infanzia dell'autore, che oltre a mostrare un'opportuna texture, limita i movimenti della moto fornendo attrito superiore (camminarci sopra a proprio rischio e pericolo).
 
 -----
 ## **Controlli**

@@ -170,6 +170,11 @@ class World {
             carpet->Scale(27, 1, 16.16);
             carpet->Translate(0, 0.1, -75);
 
+            PlotTwist* plottwist = new PlotTwist((char*) "./Resources/PlotTwist/plottwist.obj", "Resources/fire.ppm");
+
+            plottwist->Translate(-100, 0, -50);
+            plottwist->Scale(10, 10, 10);
+
             tiles.push_back(obstacle);
             tiles.push_back(obstacle2);
             tiles.push_back(obstacle3);
@@ -180,6 +185,7 @@ class World {
             tiles.push_back(sphere);
             tiles.push_back(sphere2);
             tiles.push_back(sphere3);
+            tiles.push_back(plottwist);
             
         }
 

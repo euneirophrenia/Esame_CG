@@ -31,15 +31,15 @@ unsigned char* ppmRead(std::string filename, int* width, int* height){
     /* grab the three elements in the header (width, height, maxval). */
     i = 0;
     while(i < 3) {
-	fgets(head, 70, fp);
-	if (head[0] == '#')		/* skip comments. */
-	    continue;
-	if (i == 0)
-	    i += sscanf(head, "%d %d %d", &w, &h, &d);
-	else if (i == 1)
-	    i += sscanf(head, "%d %d", &h, &d);
-	else if (i == 2)
-	    i += sscanf(head, "%d", &d);
+        fgets(head, 70, fp);
+        if (head[0] == '#')		/* skip comments. */
+            continue;
+        if (i == 0)
+            i += sscanf(head, "%d %d %d", &w, &h, &d);
+        else if (i == 1)
+            i += sscanf(head, "%d %d", &h, &d);
+        else if (i == 2)
+            i += sscanf(head, "%d", &d);
     }
 
     /* grab all the image data in one fell swoop. */
@@ -67,7 +67,7 @@ bool LoadPPM(int bind, std::string filename) {
     gluBuild2DMipmaps( GL_TEXTURE_2D, 3, w, h, GL_RGB, GL_UNSIGNED_BYTE, texture );
     free( texture );
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR ); 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR ); 
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     glDisable( GL_TEXTURE_2D );

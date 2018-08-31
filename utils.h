@@ -168,9 +168,6 @@ class TextureProvider {
       glEnable(GL_TEXTURE_GEN_S);
       glEnable(GL_TEXTURE_GEN_T);
       
-      // ulilizzo le coordinate OGGETTO
-      // cioe' le coordnate originali, PRIMA della moltiplicazione per la ModelView
-      // in modo che la texture sia "attaccata" all'oggetto, e non "proiettata" su esso
       glTexGeni(GL_S, GL_TEXTURE_GEN_MODE , mode);
       glTexGeni(GL_T, GL_TEXTURE_GEN_MODE , mode);
 

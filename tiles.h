@@ -9,6 +9,7 @@ extern bool useShadow;
 extern bool useTransparency;
 extern bool useHeadlight;
 extern bool stopTime;
+extern bool dead;
 extern Point3 player_position;
 extern std::string floor_texture;
 
@@ -88,11 +89,11 @@ class Tile {
             Scale(s.coord[0], s.coord[1], s.coord[2]);
         }
 
-        inline void BindBuffers() {
+        void BindBuffers() {
             model.BindBuffers();
         }
 
-        inline void FreeBuffers() {
+        void FreeBuffers() {
             model.FreeBuffers();
         }
 
@@ -572,5 +573,108 @@ class FlatTile : public CubeTile {
             return UP;
         }
 
+
+};
+
+
+class PlotTwist : public Tile {
+    protected:
+        float v = 0.1f; //how fast to follow the player
+        Vector3 velocity;
+
+        inline void DoPhysics() {
+            if (stopTime) return;
+            
+            float dist=(player_position - center).modulo();
+            velocity = (player_position - center) / dist * (dist < 20 && useHeadlight? v * 0.5 : v);
+            
+            if (v!=0){
+                // Rotate to face the player
+                glRotatef(180.0*atan2(velocity.X(), velocity.Z())/M_PI, 0, 1, 0); //horizontal orientation
+                glRotatef(180.0*atan2(velocity.Y(), sqrt(velocity.coord[0] * velocity.coord[0] + velocity.coord[2]*velocity.coord[2]))/M_PI, 0 , 0, 1); //vertical
+            }
+
+            //---- Follow him
+            Translate(velocity.X(), velocity.Y(), velocity.Z());
+
+            if ((player_position - center).modulo() < 1) {
+                v = 0;
+                dead = true;
+            }
+        }
+
+        inline virtual void DrawShadow() {
+            float dist=(player_position - center).modulo();
+            if (!useHeadlight || dist > 20)
+                glColor3f(0, 0, 0);
+            else
+                glColor4f(0.7 - dist/30 , 0.7 - dist/30, 0.7 - dist/30, dist/30); // colore non proprio fisso
+            glPushMatrix();
+                glTranslatef(0, -center.Y() + 0.01,  0); // alzo l'ombra di un epsilon per evitare z-fighting con il pavimento
+                glScalef(1.01, 0, 1.01);  // appiattisco sulla Y, ingrandisco dell'1% sulla Z e sulla X 
+                glDisable(GL_LIGHTING); // niente lighting per l'ombra
+                glEnable(GL_BLEND);
+                glDisable(GL_DEPTH);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                texProvider->BindTexture(GL_TEXTURE_2D, floor_texture);
+                model.RenderArray();
+            glPopMatrix();
+            glEnable(GL_LIGHTING);
+            glEnable(GL_DEPTH);
+            glDisable(GL_BLEND);
+            glColor3f(1,1,1);
+        }
+
+    public:
+        explicit PlotTwist(char* body, std::string texturename): Tile(body) {
+            basecolor = Vector3(61, 1, 86) / 255.0f;
+            textureName = texturename;
+        }
+
+        float height_at(Point3 point) {
+            return 1337; //instant death upon touching
+        }
+
+        Vector3 normal_at(Point3 point) {
+            return UP;
+        }
+
+        inline void Draw() {
+            glPushMatrix();
+                glColor3f(1, 1, 1);
+                glTranslatef(center.X(), center.Y(), center.Z());
+                glScalef(scale.X(), scale.Y(), scale.Z());
+
+                DoPhysics();                 
+                if (useShadow) {
+                    DrawShadow();
+                }
+            
+                if (!useWireframe) {
+                    //glColor4f(basecolor.X(), basecolor.Y(), basecolor.Z(), 0.4);
+                    glColor4f(1,1,1, 0.4);
+                    glEnable(GL_BLEND);
+                    glDisable(GL_DEPTH);
+                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                    texProvider->SetupAutoTexture2D(textureName, model.bbmax, model.bbmin);
+
+                }
+                else {
+                    glColor3f(1,1,1);
+                }
+                model.RenderArray();
+                
+            glPopMatrix();
+            glDisable(GL_BLEND);
+            glDisable(GL_TEXTURE_GEN_S);
+            glDisable(GL_TEXTURE_GEN_T);
+            glDisable(GL_TEXTURE_2D);
+            glEnable(GL_DEPTH);
+        }
+
+        void DrawMiniMarker() {
+            drawCircle(0.0005);
+        }
+            
 
 };
