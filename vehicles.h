@@ -376,7 +376,7 @@ class MotorBike : public Vehicle {
                 normaldirection = Vector3(0, 0, vzm >=0 ? -1 : 1);
             }
 
-            if (abs(px) > 98 || abs(pz) > 98)
+            if (abs(px) > 99 || abs(pz) > 99)
                 crashed=true;
         } 
 

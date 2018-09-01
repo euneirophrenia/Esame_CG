@@ -32,7 +32,20 @@ const std::vector<std::vector<Point3>> cube_faces {
   std::vector<Point3>{ Point3(-1,1,-1), Point3(-1,-1,-1), Point3(-1, -1, 1), Point3(-1, 1, 1)}
 };
 
-const std::vector<Vector3> cube_normals { Vector3(0,0,1), Vector3(0,0,-1), Vector3(0,1,0), Vector3(0,-1,0), Vector3(1,0,0), Vector3(-1,0,0)};
+// Interpolated normals
+const std::vector<std::vector<Vector3>> cube_normals { 
+          std::vector<Vector3> { Vector3(-1,1,-1).Normalize(), Vector3(-1,-1,-1).Normalize(), Vector3(1,1,-1).Normalize(), Vector3(1,-1,-1).Normalize() },
+          std::vector<Vector3> { Vector3(-1,1,1).Normalize(), Vector3(-1,-1,1).Normalize(), Vector3(1, 1, -1).Normalize(), Vector3(1, -1, -1).Normalize() },
+          std::vector<Vector3> { Vector3(-1,1,1).Normalize(), Vector3(-1,1,-1).Normalize(), Vector3(1,1,1).Normalize(), Vector3(1,1,-1).Normalize() },
+          std::vector<Vector3> { Vector3(-1,-1,1).Normalize(), Vector3(-1,-1,-1).Normalize(), Vector3(1,-1,1).Normalize(), Vector3(1,-1,-1).Normalize() },
+          std::vector<Vector3> { Vector3(1,1,-1).Normalize(), Vector3(1,-1,-1).Normalize(), Vector3(1,1,1).Normalize(), Vector3(1,-1,1).Normalize() },
+          std::vector<Vector3> { Vector3(-1,1,-1).Normalize(), Vector3(-1,-1,-1).Normalize(), Vector3(-1,1,1).Normalize(), Vector3(-1,-1,1).Normalize() }
+  };
+
+// Naive normals
+// const std::vector<Vector3> cube_normals {
+//     Vector3(0, 0, 1), Vector3(0, 0, -1), Vector3(0, 1, 0), Vector3(0, -1, 0), Vector3(1, 0, 0), Vector3(-1, 0, 0)
+// };
 
 inline Point2 rotateAround(Point2 src, Point3 center, float angle) {
   float cosine = cos(angle);
@@ -190,10 +203,11 @@ inline void DrawQuadTexture(std::string texture, std::vector<Point3> face, std::
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glBegin(GL_QUADS);  
+      //glNormal3f(normals.X(), normals.Y(), normals.Z());
       for (int i=0; i<face.size(); i++) {
         glNormal3f(normals[i].coord[0], normals[i].coord[1], normals[i].coord[2]);
-        glTexCoord2f(texcoord[i].coord[0], texcoord[i].coord[1]);
-        glVertex3f(face[i].coord[0], face[i].coord[1], face[i].coord[2]);
+        glTexCoord2f(texcoord[i].X(), texcoord[i].Y());
+        glVertex3f(face[i].X(), face[i].Y(), face[i].Z());
       }
     glEnd();
     glDisable(GL_TEXTURE_2D);
@@ -210,10 +224,10 @@ inline void DrawCube(std::vector<std::string> textures, bool withLighting = fals
   else
     glDisable(GL_LIGHTING);
   TextureProvider* provider = TextureProvider::getInstance();
-  glColor3f(1,1,1);
+  glColor3f(1, 1, 1);
 
   for (int i=0; i<6; i++){
-    DrawQuadTexture(textures[i % textures.size()], cube_faces[i], quad_texcoord, cube_normals);
+    DrawQuadTexture(textures[i % textures.size()], cube_faces[i], quad_texcoord, cube_normals[i]);
     glDisable(GL_TEXTURE_2D);
   }
 }

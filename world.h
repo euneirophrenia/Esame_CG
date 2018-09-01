@@ -112,8 +112,8 @@ class World {
                 glEnable(GL_LIGHTING);
             } 
             else {
-                glDisable(GL_LIGHTING);
-                //glEnable(GL_LIGHTING);
+                //glDisable(GL_LIGHTING);
+                glEnable(GL_LIGHTING);
                 glColor3f(1,1,1);
                 glPushMatrix();
                     glTranslatef(0, H * 0.99, 0);

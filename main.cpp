@@ -258,6 +258,11 @@ inline void DrawUI(){
     DrawText(scrW/2 - 5, scrH/2 - 25, "press Q to exit", RED);
     DrawText(scrW/2 - 150, scrH/2 - 50, "..did I mention there's a monster under the bed?", RED);
     setInputState(false);
+    float col0[4]= {40/255.0, 13/255.0, 100.0/255,  1};
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, col0);    
+    //float col1[4]= {0.5,0.5,0.0,  1};
+    glLightfv(GL_LIGHT0, GL_AMBIENT, col0);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND); //~inverse color effect, for fun
   }
 
   if (showMinimap)
@@ -525,7 +530,7 @@ void CleanUpFunc() {
   texProvider -> FreeTextures();
   printf(" done!\n");
   if (dead) {
-    printf("..Did I mention there's a monster under the bed?\n");
+    printf("..maybe if we had some light the monster would go away?\n");
   }
 }
 
@@ -556,6 +561,8 @@ int main(int argc, char* argv[])
   glEnable(GL_RESCALE_NORMAL); // opengl, per favore, rinormalizza le normali prima di usarle (the fast way)
   glEnable(GL_CULL_FACE);
   glFrontFace(GL_CW); // consideriamo Front Facing le facce ClockWise
+
+  //glEnable(GL_MULTISAMPLE);
   
   glEnable(GL_COLOR_MATERIAL);
   glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);

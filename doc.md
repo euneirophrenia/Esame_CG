@@ -138,7 +138,8 @@ In questo modo, capire a che altezza si deve trovare la moto per restare sopra l
 3. Applico il modello intrinseco della ```tile``` e scopro il valore della coordinata Y (l'altezza), lungo quella superficie. In altre parole, in questo step, calcolo la funzione nota a priori.
 
 
-Ora è possibile anche stabilire se la moto si schianta contro un muro: se la nuova altezza è "troppo elevata" rispetto alla attuale, è un muro.
+>Ora è possibile anche stabilire se la moto si schianta contro un muro: se la nuova altezza è "troppo elevata" rispetto alla attuale, è un muro.
+Per quanto riguarda invece i veri muri della stanza, si è optato per dei controlli abbastanza stretti sulla posizione orizzontale della moto. Questo fa sì che la moto sia considerata schiantata anche se in realtà dista ancora leggermente dai muri, ma la cosa non dovrebbe causare eccessivo disturbo.
 
 Con questa conoscenza in tasca, la moto è in grado di seguire alla lettera ogni superficie, ma mancano ancora due ingredienti fondamentali:
 - La corretta inclinazione della moto lungo i vari terreni
@@ -179,6 +180,8 @@ Questa pratica, altamente sconsigliata, è stata perseguita ugualmente per due r
 * I FPS in generale sono abbastanza stabili, rendendo di conseguenza stabile la fisica.
 
 In estrema sintesi, non si è ritenuto valesse la pena aggiornare i pochi valori della fisica in funzioni separate dalla resa grafica.
+
+Di conseguenza, lo *stop del tempo* (attivabile con il tasto ```P```) è stato realizzato mediante switch booleani, siccome la fisica non dipende dal tempo dell'applicazione.
 
 -----
 

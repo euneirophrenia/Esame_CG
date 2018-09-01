@@ -409,7 +409,6 @@ class CubeTile : public Tile {
         std::vector<std::string> textures;
         Point3 maximum{1,1,1};
         Point3 minimum{-1,-1,-1};
-        bool useligthing = true;
 
     public:
         explicit CubeTile(char* filename) : Tile(filename) {
@@ -420,6 +419,7 @@ class CubeTile : public Tile {
             textures.push_back("Resources/dice2.ppm");
             textures.push_back("Resources/dice3.ppm");
             textures.push_back("Resources/dice4.ppm");
+            uselight = true;
 
         }
         float height_at(Point3 point) {
@@ -439,7 +439,7 @@ class CubeTile : public Tile {
                 glScalef(scale.X(), scale.Y(), scale.Z());
                 glDisable(GL_CULL_FACE);
                 if (!useWireframe) {
-                      DrawCube(textures, useligthing);
+                      DrawCube(textures, uselight);
                 }
                 else {
                     drawCubeWire();
@@ -557,7 +557,7 @@ class FlatTile : public CubeTile {
             for (int k=0; k<6; k++)
                 textures.push_back(textureName);
             scale.coord[1] = 0.1;
-            useligthing = false;
+            uselight = false;
 
             friction.coord[0] = 0.8;
             friction.coord[1] = 1;
@@ -581,12 +581,21 @@ class PlotTwist : public Tile {
     protected:
         float v = 0.1f; //how fast to follow the player
         Vector3 velocity;
+        const float max_dist = 15;
+        const float safety_margin = 2; // to prevent monster staggering
 
         inline void DoPhysics() {
             if (stopTime) return;
             
             float dist=(player_position - center).modulo();
-            velocity = (player_position - center) / dist * (dist < 20 && useHeadlight? v * 0.5 : v);
+            if (dist < max_dist && useHeadlight) {
+                velocity = (player_position - center) * (dist - max_dist) / max_dist; //for fun, when the monster is close make it run away super fast from light
+                velocity.coord[1] = 0; //to prevent some weird phenomena
+            }
+            else {
+                    if (!useHeadlight)
+                        velocity = (player_position - center) / dist * v;
+            }
             
             if (v!=0){
                 // Rotate to face the player
@@ -604,11 +613,12 @@ class PlotTwist : public Tile {
         }
 
         inline virtual void DrawShadow() {
+
             float dist=(player_position - center).modulo();
             if (!useHeadlight || dist > 20)
-                glColor3f(0, 0, 0);
+                glColor4f(0.1, 0.1, 0.1, 0.6);
             else
-                glColor4f(0.7 - dist/30 , 0.7 - dist/30, 0.7 - dist/30, dist/30); // colore non proprio fisso
+                glColor4f(0.7 - dist/30, 0.7 - dist/30, 0.7 - dist /30, dist/30); // colore non proprio fisso
             glPushMatrix();
                 glTranslatef(0, -center.Y() + 0.01,  0); // alzo l'ombra di un epsilon per evitare z-fighting con il pavimento
                 glScalef(1.01, 0, 1.01);  // appiattisco sulla Y, ingrandisco dell'1% sulla Z e sulla X 
@@ -642,14 +652,17 @@ class PlotTwist : public Tile {
         inline void Draw() {
             glPushMatrix();
                 glColor3f(1, 1, 1);
-                glTranslatef(center.X(), center.Y(), center.Z());
-                glScalef(scale.X(), scale.Y(), scale.Z());
 
-                DoPhysics();                 
+                glTranslatef(center.X(), center.Y(), center.Z());
+                glScalef(scale.X(), scale.Y(), scale.Z());      
+
+                DoPhysics();
+  
                 if (useShadow) {
                     DrawShadow();
-                }
-            
+                }    
+               
+                   
                 if (!useWireframe) {
                     //glColor4f(basecolor.X(), basecolor.Y(), basecolor.Z(), 0.4);
                     glColor4f(1,1,1, 0.4);
