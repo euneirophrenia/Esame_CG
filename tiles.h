@@ -11,6 +11,7 @@ extern bool useHeadlight;
 extern bool stopTime;
 extern bool dead;
 extern Point3 player_position;
+extern float player_facing;
 extern std::string floor_texture;
 
 const Vector3 UP(0,1,0);
@@ -586,15 +587,16 @@ class PlotTwist : public Tile {
 
         inline void DoPhysics() {
             if (stopTime) return;
-            
-            float dist=(player_position - center).modulo();
-            if (dist < max_dist && useHeadlight) {
+            Point3 diff = (center - player_position);
+            float cos_angle_between = -(cos(player_facing) * diff.X() + sin(player_facing) * diff.Z())/sqrt(diff.X()*diff.X() + diff.Z() * diff.Z());
+            float dist=diff.modulo();
+            if (dist < max_dist && useHeadlight && cos_angle_between >= 0.86) {
                 velocity = (player_position - center) * (dist - max_dist) / max_dist; //for fun, when the monster is close make it run away super fast from light
                 velocity.coord[1] = 0; //to prevent some weird phenomena
             }
             else {
-                    if (!useHeadlight)
-                        velocity = (player_position - center) / dist * v;
+                    if (!useHeadlight || cos_angle_between < 0.86)
+                        velocity = (player_position - center) * v / dist;
             }
             
             if (v!=0){

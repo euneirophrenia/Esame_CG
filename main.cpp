@@ -40,7 +40,8 @@ static int keymap[Controller::NKEYS] = {'A', 'D', 'W', 'S'};
 World world;
 MotorBike bike(&world); // la nostra moto
 
-Point3 player_position; // #hacks
+Point3 player_position; // #hacks, if I was smarter about organizing my code i would not need these
+float player_facing; // #hacks, ""  """ "" "" "" "" "" "" "" "" "" "" "" "" "" ""
 
 
 int nstep=0; // numero di passi di FISICA fatti fin'ora
@@ -461,6 +462,7 @@ inline void idleFunction() {
         player_position.coord[0] = bike.px;
         player_position.coord[1] = bike.py;
         player_position.coord[2] = bike.pz;
+        player_facing =  bike.facing * M_PI / 180;
         nstep++;
         doneSomething = true;
         timeNow = glutGet(GLUT_ELAPSED_TIME);
