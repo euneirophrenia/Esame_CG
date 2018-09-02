@@ -462,7 +462,7 @@ inline void idleFunction() {
         player_position.coord[0] = bike.px;
         player_position.coord[1] = bike.py;
         player_position.coord[2] = bike.pz;
-        player_facing =  bike.facing * M_PI / 180;
+        player_facing =  bike.facing * M_PI / 180; //facing = 0 => // asse Z
         nstep++;
         doneSomething = true;
         timeNow = glutGet(GLUT_ELAPSED_TIME);

@@ -587,11 +587,11 @@ class PlotTwist : public Tile {
 
         inline void DoPhysics() {
             if (stopTime) return;
-            Point3 diff = (center - player_position);
-            float cos_angle_between = -(cos(player_facing) * diff.X() + sin(player_facing) * diff.Z())/sqrt(diff.X()*diff.X() + diff.Z() * diff.Z());
+            Point3 diff = (player_position - center);
+            float cos_angle_between = (sin(player_facing) * diff.X() + cos(player_facing) * diff.Z())/sqrt(diff.X()*diff.X() + diff.Z() * diff.Z());
             float dist=diff.modulo();
             if (dist < max_dist && useHeadlight && cos_angle_between >= 0.86) {
-                velocity = (player_position - center) * (dist - max_dist) / max_dist; //for fun, when the monster is close make it run away super fast from light
+                velocity = (diff) * (dist - max_dist) / max_dist; //for fun, when the monster is close make it run away super fast from light
                 velocity.coord[1] = 0; //to prevent some weird phenomena
             }
             else {
